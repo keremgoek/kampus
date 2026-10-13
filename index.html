@@ -1357,6 +1357,12 @@ const callScene = {
 function finale() { ended = true; locked = true; $("outro").hidden = false; }
 
 /* --- Görev atlama / önceki göreve dönme --- */
+// Verilen x'te zeminin en üst yüzeyi (amfi basamakları gibi yükseltiler dahil), ışınlanınca toprağa gömülmesin
+function groundAt(x, base) {
+  let top = base;
+  for (const s of solids) if (x + 6 > s.x && x < s.x + s.w && s.h < 40 && s.y < top && s.y >= base - 30) top = s.y;
+  return top;
+}
 function jumpQuest(delta) {
   if (!running || $("fade").classList.contains("on")) return;
   let d = day, q = quest + delta;
@@ -1369,12 +1375,12 @@ function jumpQuest(delta) {
     if (d === 1) { d = 2; q = 0; }
     else { quest = QUESTS[2].length; updateHud(); finale(); return; }
   }
-  const Q = QUESTS[d][q];
+  const Q = QUESTS[d][q], sx = Math.max(4, Q.x - 4);
   startDay(d, {
     quest: q, glasses,
     talked: d === 1 && q > 9 ? friends.map(f => f.name) : [],
     halilCalled: !(d === 1 && q <= 5),
-    x: Q.home ? Math.max(30, Q.x - 6) : Q.x - 12, y: (Q.home ? F2 : G) - 15,
+    x: sx, y: groundAt(sx, Q.home ? F2 : G) - 15,
   });
   locked = false; skyHour = hourNow();
   banner(d + ". gün · Görev: " + Q.t);
