@@ -1018,12 +1018,12 @@ const picnicScene = {
 };
 
 /* --- Metro: U-Haltestelle Durlacher Tor / KIT-Campus Süd (yer altında, aydınlık, açık renk taş duvarlar) --- */
-const METRO_LINES = [["S2", "Rheinstetten"], ["1", "Oberreut"], ["S5", "Wörth"], ["2", "Siemensallee"]];
+const METRO_LINES = [["1", "Oberreut"], ["S5", "Wörth"], ["2", "Siemensallee"]];
 const metroScene = {
   open(ui) {
     Object.assign(this, {t: 0, state: "wait", tx: 760, doors: 0, wait: 260, line: 0, boarded: false, bx: 300});
     const sign = el("div", "label", "Durlacher Tor / KIT-Campus Süd"); Object.assign(sign.style, {left: "50%", top: "30%"}); ui.appendChild(sign);
-    const bar = el("div", "cbar"); this.msg = el("p", null, "13 metre aşağıdasın. Bir sonraki metro birazdan gelecek.");
+    const bar = el("div", "cbar"); this.msg = el("p", null, "13 metre aşağıdasın. Europaplatz'taki dm'e gitmek için gelen metroya bin.");
     const box = el("div");
     this.board = el("button", "btn", "Metroya bin"); this.board.type = "button"; this.board.disabled = true;
     const up = el("button", "btn ghost", "Yukarı çık"); up.type = "button"; this.up = up;
@@ -1034,7 +1034,7 @@ const metroScene = {
   cancel() { if (!this.boarded) closeScene(); },
   ride() {
     if (this.boarded || this.state !== "open") return;
-    this.boarded = true; this.board.disabled = true; this.up.disabled = true; this.msg.textContent = "Bindin! Kapılar kapanıyor...";
+    this.boarded = true; this.board.disabled = true; this.up.disabled = true; this.msg.textContent = "Bindin! Europaplatz'a gidiyorsun.";
   },
   draw() {
     const t = ++this.t, L = METRO_LINES[this.line % METRO_LINES.length];
@@ -1070,7 +1070,7 @@ const metroScene = {
     if (this.state === "leave") {
       this.v *= 1.06; this.tx -= this.v;
       if (this.tx < -760) {
-        if (this.boarded) { this.state = "done"; fade("Kronenplatz'a kadar gidip geri döndün.", () => closeScene()); }
+        if (this.boarded) { this.state = "done"; fade("Europaplatz · dm", () => setScene(dmScene)); }
         else { this.state = "wait"; this.wait = 300; this.line++; this.msg.textContent = "Metro gitti. Bir sonraki birazdan gelecek."; }
       }
     }
@@ -1106,6 +1106,91 @@ const metroScene = {
   },
   doorX() { return Math.round(this.tx) + 44; },
 };
+
+/* --- Europaplatz'taki dm: nemli çok amaçlı mendil ve yeşil şişeli şampuan --- */
+const DM_ITEMS = [
+  {id: "yesil", name: "Yeşil şampuan", x: 262, y: 102, w: 32, h: 58, need: true},
+  {id: "pembe", name: "Pembe şampuan", x: 330, y: 108, w: 28, h: 52},
+  {id: "mavi", name: "Mavi şampuan", x: 394, y: 106, w: 28, h: 54},
+  {id: "tuch", name: "Feuchte Allzwecktücher", x: 66, y: 184, w: 78, h: 40, need: true},
+  {id: "dis", name: "Diş macunu", x: 478, y: 136, w: 64, h: 24},
+  {id: "gunes", name: "Güneş kremi", x: 556, y: 168, w: 36, h: 56},
+];
+const dmScene = {
+  open(ui) {
+    this.sel = new Set(); this.paid = false;
+    const sign = el("div", "label", "dm-drogerie markt · Europaplatz"); Object.assign(sign.style, {left: "50%", top: "7%"}); ui.appendChild(sign);
+    DM_ITEMS.forEach(f => {
+      const b = el("button", "hot"); b.type = "button"; b.setAttribute("aria-pressed", "false");
+      Object.assign(b.style, {left: f.x / 6.4 + "%", top: f.y / 3.6 + "%", width: f.w / 6.4 + "%", height: f.h / 3.6 + "%"});
+      b.appendChild(el("span", null, f.name));
+      b.addEventListener("click", () => { this.sel.has(f.id) ? this.sel.delete(f.id) : this.sel.add(f.id); b.setAttribute("aria-pressed", this.sel.has(f.id)); this.sync(); });
+      ui.appendChild(b);
+    });
+    const bar = el("div", "cbar"); this.msg = el("p"); const box = el("div");
+    this.go = el("button", "btn", "Kasaya git"); this.go.type = "button";
+    this.go.addEventListener("click", () => this.pay()); box.appendChild(this.go); bar.append(this.msg, box); ui.appendChild(bar);
+    this.sync();
+  },
+  sync() {
+    const tuch = this.sel.has("tuch"), yesil = this.sel.has("yesil");
+    this.msg.textContent = tuch && yesil ? "Liste tamam: Allzwecktücher ve yeşil şampuan sepette."
+      : !tuch && !yesil ? "Liste: Feuchte Allzwecktücher ve yeşil şişeli şampuan."
+      : tuch ? "Allzwecktücher sepette. Bir de yeşil şişeli şampuan lazım." : "Şampuan sepette. Feuchte Allzwecktücher'i unutma.";
+    this.go.disabled = !(tuch && yesil);
+  },
+  key(k) { if (k === "Enter" && !this.go.disabled) this.pay(); },
+  cancel() {},
+  pay() {
+    if (this.paid) return; this.paid = true; this.go.disabled = true;
+    const extra = [...this.sel].filter(id => !DM_ITEMS.find(f => f.id === id).need).map(id => DM_ITEMS.find(f => f.id === id).name.toLowerCase());
+    say([
+      {who: "Kasiyer", text: "Hallo! Hast du eine Payback-Karte?"},
+      {who: HER, text: "Ja, hier bitte."},
+      {who: "Kasiyer", text: "Danke! Brauchst du den Bon?"},
+      {who: HER, text: "Nein, danke. Tschüss!"},
+      {who: HER, text: extra.length ? "Allzwecktücher, yeşil şampuan... bir de " + extra.join(", ") + ". Listede yoktu ama olsun." : "Allzwecktücher ve yeşil şampuan tamam. Hadi kampüse dönelim."},
+    ], () => fade("Metroyla Durlacher Tor / KIT-Campus Süd'e döndün.", () => closeScene()));
+  },
+  draw() {
+    const lift = id => this.sel && this.sel.has(id) ? -4 : 0;
+    // duvar, tavan lambaları, zemin
+    PX(0, 0, 640, 360, "#f6f4ef"); PX(0, 0, 640, 30, "#ffffff");
+    for (let x = 30; x < 640; x += 110) { PX(x, 8, 70, 6, "#fff8e0"); PX(x + 2, 9, 66, 4, "#ffffff"); }
+    PX(0, 30, 640, 22, "#e8433a"); PX(0, 50, 640, 2, "#c22f28"); for (let x = 0; x < 640; x += 16) PX(x, 34, 8, 2, "#f06a62");
+    PX(0, 262, 640, 98, "#dcd9d2"); for (let y = 266; y < 360; y += 18) for (let x = (y / 18) % 2 ? -20 : 0; x < 640; x += 40) PX(x, y, 39, 17, shade("#dcd9d2", .97 + hash(x, y) * .05));
+    // raf üniteleri
+    for (const [x0, x1] of [[40, 230], [250, 440], [460, 624]]) {
+      PX(x0 - 4, 60, x1 - x0 + 8, 202, "#d8d4cc"); PX(x0, 64, x1 - x0, 196, "#ffffff"); PX(x0 - 4, 60, x1 - x0 + 8, 3, "#bdb8ae");
+      for (const y of [96, 160, 224]) { PX(x0, y, x1 - x0, 5, "#c9c4b8"); PX(x0, y, x1 - x0, 1, "#e8e4da"); PX(x0, y + 5, x1 - x0, 2, "#a8a296"); PX(x0 + 4, y + 1, 14, 3, "#f0c419"); }
+      PX(x0 - 4, 256, x1 - x0 + 8, 6, "#bdb8ae");
+    }
+    // dolgu ürünler
+    const fill = (x0, x1, y, seed) => { for (let x = x0 + 22; x < x1 - 6; x += 12) { const h = 14 + Math.floor(hash(x, seed) * 14), c = ["#7aaee0", "#e98aa5", "#f4f0e3", "#9b5de5", "#6fa37a", "#f0b44c", "#ee6c4d"][Math.floor(hash(seed, x) * 7)]; PX(x, y - h, 9, h, c); PX(x, y - h, 9, 2, shade(c, 1.15)); PX(x + 2, y - h + 5, 5, 3, "#ffffff"); } };
+    fill(40, 230, 96, 1); fill(40, 160, 160, 2); fill(150, 230, 224, 3);
+    fill(250, 440, 96, 4); fill(250, 440, 224, 5);
+    fill(460, 624, 96, 6); fill(460, 540, 224, 7); fill(548, 624, 160, 8);
+    for (let x = 164; x < 228; x += 22) { PX(x, 134, 18, 26, "#f4f0e3"); PX(x, 134, 18, 4, "#e8433a"); PX(x + 4, 144, 10, 6, "#d8d4cc"); }
+    // yeşil şampuan (aranan)
+    let o = lift("yesil");
+    PX(270, 110 + o, 16, 48, "#3f9a4a"); PX(272, 106 + o, 12, 6, "#3f9a4a"); PX(274, 100 + o, 8, 6, "#2a2e36"); PX(272, 112 + o, 3, 40, "#6cc276"); PX(284, 110 + o, 2, 48, "#2c7436");
+    PX(272, 124 + o, 12, 16, "#ffffff"); PX(274, 128 + o, 8, 2, "#3f9a4a"); PX(274, 132 + o, 6, 1, "#9aa"); circ(278, 136 + o, 1, "#6aae62", cctxPX);
+    // pembe ve mavi şampuanlar
+    o = lift("pembe"); PX(334, 116 + o, 20, 42, "#e98aa5"); PX(338, 110 + o, 12, 6, "#2a2e36"); PX(336, 118 + o, 3, 36, "#f6b8c8"); PX(337, 128 + o, 14, 12, "#ffffff"); PX(339, 132 + o, 10, 2, "#c45a86");
+    o = lift("mavi"); PX(398, 114 + o, 20, 44, "#4f8ad0"); PX(402, 108 + o, 12, 6, "#f4f0e3"); PX(400, 116 + o, 3, 38, "#8fbcf0"); PX(401, 126 + o, 14, 12, "#ffffff"); PX(403, 130 + o, 10, 2, "#2f5fb8");
+    // Feuchte Allzwecktücher paketi
+    o = lift("tuch");
+    PX(70, 192 + o, 70, 30, "#e9f2f8"); PX(70, 192 + o, 70, 3, "#ffffff"); PX(70, 218 + o, 70, 4, "#b8cad8"); PX(92, 186 + o, 26, 8, "#2f6fb8"); PX(94, 188 + o, 22, 4, "#4f8ad0");
+    PX(76, 200 + o, 30, 4, "#2f6fb8"); PX(76, 206 + o, 20, 2, "#7aaee0"); circ(124, 206 + o, 7, "#7fc4e8", cctxPX); circ(124, 206 + o, 4, "#ffffff", cctxPX); PX(76, 212 + o, 14, 2, "#9aa");
+    // diş macunu ve güneş kremi
+    o = lift("dis"); PX(482, 140 + o, 56, 18, "#ffffff"); PX(482, 140 + o, 56, 4, "#e8433a"); PX(488, 148 + o, 26, 3, "#3b6fd1"); PX(520, 147 + o, 12, 6, "#7aaee0");
+    o = lift("gunes"); PX(562, 176 + o, 24, 46, "#f0b44c"); PX(566, 170 + o, 16, 6, "#e8433a"); PX(564, 178 + o, 3, 40, "#f8d080"); circ(574, 196 + o, 6, "#ffffff", cctxPX); circ(574, 196 + o, 4, "#f06a3a", cctxPX);
+    // kasa (sağ alt)
+    PX(560, 236, 80, 26, "#e8433a"); PX(560, 236, 80, 3, "#f06a62"); PX(592, 222, 20, 14, "#2a2e36"); PX(594, 224, 16, 8, "#7fd0a0");
+  },
+};
+// circ() statik katmana çizer; yakın plan tuvaline px koordinatla çizmek için küçük bir sarmalayıcı
+const cctxPX = {set fillStyle(c) { cctx.fillStyle = c; }, fillRect(x, y, w, h) { cctx.fillRect(x / 2, y / 2, w / 2, h / 2); }};
 
 /* --- 2. gün: Annenin araması --- */
 const callScene = {
