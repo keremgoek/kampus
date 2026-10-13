@@ -47,13 +47,21 @@
   .world { position: absolute; inset: 0; transition: transform .55s cubic-bezier(.5,0,.3,1); }
   .world.zoom { transform: scale(3.2); }
   canvas { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
-  .hud { position: absolute; top: 2%; left: 1.5%; right: 1.5%; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; pointer-events: none; }
+  body.notrun .hud { visibility: hidden; }
+  .hud { position: absolute; z-index: 8; top: 2%; left: 1.5%; right: 1.5%; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; pointer-events: none; }
+  .hudleft { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; max-width: 72%; }
+  .qnav { display: flex; gap: 6px; pointer-events: auto; }
+  .qnav button {
+    font-family: var(--f-display); font-size: clamp(10px, 1.4vw, 14px); cursor: pointer; border: 0; border-radius: 4px; padding: .25em .6em;
+    background: color-mix(in srgb, var(--panel) 85%, transparent); color: var(--panel-ink); box-shadow: 0 2px 0 var(--accent-deep);
+  }
+  .qnav button:active { transform: translateY(1px); box-shadow: 0 1px 0 var(--accent-deep); }
   .chip {
     font-family: var(--f-display); font-size: clamp(11px, 1.7vw, 18px); line-height: 1.2;
     background: var(--panel); color: var(--panel-ink); padding: .3em .6em; border-radius: 4px; box-shadow: 0 3px 0 var(--accent-deep);
   }
   .chip b { color: var(--accent-deep); }
-  .quest { display: flex; gap: .5em; align-items: center; max-width: 72%; }
+  .quest { display: flex; gap: .5em; align-items: center; }
   .arrow { font-size: 1.2em; color: var(--accent-deep); }
   .label {
     position: absolute; transform: translate(-50%, -100%); white-space: nowrap; pointer-events: none;
@@ -232,7 +240,10 @@
     <div class="cui" id="cui"></div>
   </div>
   <div class="hud">
-    <div class="chip quest"><span id="clock">07:30</span><span id="qtext"></span></div>
+    <div class="hudleft">
+      <div class="chip quest"><span id="clock">07:30</span><span id="qtext"></span></div>
+      <div class="qnav"><button id="qprev" type="button" aria-label="Önceki görev">◀ Önceki</button><button id="qnext" type="button" aria-label="Görevi atla">Atla ▶</button></div>
+    </div>
     <div class="chip arrow" id="arrow" hidden>→</div>
   </div>
   <div class="banner" id="banner"></div>
@@ -1344,6 +1355,35 @@ const callScene = {
 };
 function finale() { ended = true; locked = true; $("outro").hidden = false; }
 
+/* --- Görev atlama / önceki göreve dönme --- */
+function jumpQuest(delta) {
+  if (!running || $("fade").classList.contains("on")) return;
+  let d = day, q = quest + delta;
+  if (ended) { if (delta > 0) return; d = 2; q = QUESTS[2].length - 1; }
+  if (q < 0) { if (d === 1) return; d = 1; q = QUESTS[1].length - 1; }
+  // açık diyalog ve yakın planı kapat
+  dq = []; dDone = null; $("dialog").hidden = true; $("outro").hidden = true; ended = false;
+  if (scene) { $("close").hidden = true; $("cui").innerHTML = ""; scene = null; $("world").classList.remove("zoom"); }
+  if (q >= QUESTS[d].length) {
+    if (d === 1) { d = 2; q = 0; }
+    else { quest = QUESTS[2].length; updateHud(); finale(); return; }
+  }
+  const Q = QUESTS[d][q];
+  startDay(d, {
+    quest: q, glasses,
+    talked: d === 1 && q > 9 ? friends.map(f => f.name) : [],
+    halilCalled: !(d === 1 && q <= 5),
+    x: Q.home ? Math.max(30, Q.x - 6) : Q.x - 12, y: (Q.home ? F2 : G) - 15,
+  });
+  locked = false; skyHour = hourNow();
+  banner(d + ". gün · Görev: " + Q.t);
+  // sahne içinde geçen görevler doğrudan açılsın
+  const sc = d === 2 && {3: shopScene, 6: picnicScene, 7: pubScene}[q];
+  if (sc) { locked = true; $("prompt").hidden = true; scene = sc; $("cui").innerHTML = ""; sc.open($("cui")); $("close").hidden = false; }
+}
+$("qprev").addEventListener("click", e => { e.currentTarget.blur(); jumpQuest(-1); });
+$("qnext").addEventListener("click", e => { e.currentTarget.blur(); jumpQuest(1); });
+
 /* ============ Etkileşimler ============ */
 function questItem(q, onQuest, flavor) {
   return () => {
@@ -2099,6 +2139,7 @@ buildWorld();
 /* ============ HTML katmanları ============ */
 function overlays() {
   fitView();
+  document.body.classList.toggle("notrun", !running);
   document.body.classList.toggle("busy", !running || ended || !!scene || !$("dialog").hidden || !$("intro").hidden || !$("outro").hidden);
   const W = $("stage").clientWidth, Hh = $("stage").clientHeight, sx = W / VW, sy = Hh / VH;
   labels.forEach(l => { const x = (l.x - cam) * sx; l.el.style.left = x + "px"; l.el.style.top = l.y * sy + "px"; l.el.hidden = x < -60 || x > W + 60; });
