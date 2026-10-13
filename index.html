@@ -553,7 +553,8 @@ const fridgeScene = {
     let msg = list + " ile kahvaltını hazırladın.";
     if (this.sel.has("yumurta")) msg += " Yumurtalar tavada cızırdıyor.";
     msg += this.sel.has("sut") ? " Çayın da demlendi, yanına bir bardak süt koydun." : " Çay da demlendi, ince belli bardağa koydun.";
-    closeScene(() => say([{text: msg}], advance));
+    closeScene(() => say([{text: msg}, {text: "Kahvaltı bitti. Masayı silmek için mutfak dolabını açtın..."},
+      {who: HER, text: "Aaa, Allzwecktücher kalmamış! Bugün Europaplatz'taki dm'e uğramam lazım."}], advance));
   },
   cancel() { closeScene(); },
   draw() {
