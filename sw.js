@@ -1,6 +1,6 @@
 /* Çevrimdışı oynamak için önbellek. Önce ağ denenir (güncellemeler hemen gelsin), ağ yoksa önbellekten açılır.
    Yeni dosya eklersen FILES listesine ekle; büyük değişikliklerde VERSION'ı artır. */
-const VERSION = "kampus-v2";
+const VERSION = "kampus-v3";
 const FILES = [
   "./",
   "index.html",
