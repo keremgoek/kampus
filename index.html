@@ -257,7 +257,7 @@ const CONFIG = {
   herName: "Buket",
   fromName: "Kerem",
   outroTitle: "İyi ki varsın",
-  letter: "İki gün boyunca koşturdun: stüdyo, ders, kütüphane, tenis, alışveriş...\nGünün sonunda seni görmek benim en sevdiğim an.\nSeni çok seviyorum aşkım.",
+  letter: "İki gün boyunca koşturdun: stüdyo, ders, kütüphane, tenis, alışveriş, piknik...\nGünün sonunda seni görmek benim en sevdiğim an.\nSeni seviyorum.",
 };
 const HER = CONFIG.herName;
 
@@ -289,6 +289,7 @@ const PEOPLE = {
   Mert:  {hair: "#4a3020", long: false, shirt: "#3c6fb0", pants: "#2d2d38"},
   Emir:  {hair: "#1b1b1b", long: false, shirt: "#d0703a", pants: "#3a3a3a"},
   Kerem: {hair: "#2a1f18", long: false, shirt: "#c43c4c", pants: "#26303f"},
+  Garson: {hair: "#1b1b1b", long: false, shirt: "#f4f0e3", pants: "#26262c", vest: "#1f1f24"},
   Halil: {hair: "#bdbdbd", long: false, shirt: "#efeee8", pants: "#4a4a52", vest: "#6b4a32", mustache: "#8d8d8d", skin: "#e2b38e"},
 };
 const friends = [
@@ -317,12 +318,13 @@ const QUESTS = {1: [
   {t: "Kaiserstraße'de kıyafet alışverişi yap", time: "12:30", x: 196},
   {t: "Eve dön, yatakta biraz kestir", time: "15:00", x: 154, home: true},
   {t: "Annen arıyor, telefonu aç", time: "17:00", x: 154, home: true},
+  {t: "Schlossgarten'da kızlarla piknik yap", time: "18:30", x: 154, home: true},
 ]};
 let day = 1, quests = QUESTS[1];
 
 const labels = [
   {x: 86, y: 30, text: "Ev"}, {x: 300, y: 96, text: "Mimarlık · Bina 20.40"}, {x: 487, y: 104, text: "Amfi"},
-  {x: 668, y: 92, text: "KIT Campus Süd"}, {x: 880, y: 90, text: "KIT-Bibliothek · 24/7"}, {x: 1060, y: 110, text: "Kafeterya"},
+  {x: 668, y: 92, text: "KIT Campus Süd"}, {x: 720, y: 125, text: "U · Durlacher Tor / KIT-Campus Süd"}, {x: 880, y: 90, text: "KIT-Bibliothek · 24/7"}, {x: 1060, y: 110, text: "Kafeterya"},
 ];
 labels.forEach(l => { l.el = document.createElement("div"); l.el.className = "label"; l.el.textContent = l.text; $("labels").appendChild(l.el); });
 
@@ -402,11 +404,11 @@ function el(tag, cls, html) { const e = document.createElement(tag); if (cls) e.
 
 /* --- Telefon --- */
 const POSTS = [
-  {user: "asya", av: "#8a5cc2", caption: "stüdyo gecesi, saat 03:00 ve hâlâ buradayız", likes: 48, art: "night"},
+  {user: "asyaekz", av: "#8a5cc2", caption: "stüdyo gecesi, saat 03:00 ve hâlâ buradayız", likes: 48, art: "night"},
   {user: "pati.gunlugu", av: "#e0a35a", caption: "pazartesi modu: açık", likes: 1204, art: "cat"},
-  {user: "nilsu", av: "#e7b7c8", caption: "jüri öncesi son hal. dua edin", likes: 63, art: "maket"},
-  {user: "mert", av: "#3c6fb0", caption: "kortta gün batımı 🎾 cumartesi rövanş var", likes: 37, art: "sunset"},
-  {user: "emir", av: "#d0703a", caption: "kahve > uyku. kod derlendi sonunda", likes: 52, art: "coffee"},
+  {user: "nilsucnkls", av: "#e7b7c8", caption: "tutor görüşmesi öncesi son hal. dua edin", likes: 63, art: "maket"},
+  {user: "mertermannn", av: "#3c6fb0", caption: "kortta gün batımı 🎾 cumartesi rövanş var", likes: 37, art: "sunset"},
+  {user: "emir.aydiin_", av: "#d0703a", caption: "kahve > uyku. kod derlendi sonunda", likes: 52, art: "coffee"},
   {user: "kerem", av: "#c43c4c", caption: "en sevdiğim mimar ♥", likes: 1, art: "us"},
 ];
 function postArt(c, kind) {
@@ -596,7 +598,7 @@ const maketScene = {
   finish() {
     this.done = true; this.anim = 0; this.piece = {x: SLOT.x, y: SLOT.y}; this.t = frame; maketDone = true;
     this.msg.textContent = "Tam oturdu! Maket bitti."; this.auto.disabled = true;
-    setTimeout(() => closeScene(() => say([{text: "Son parçayı yapıştırdın. Jüri bunu görünce çok beğenecek."}], advance)), 1500);
+    setTimeout(() => closeScene(() => say([{text: "Son parçayı yapıştırdın. Tutor bunu görünce çok beğenecek."}], advance)), 1500);
   },
   cancel() { closeScene(); },
   draw() {
@@ -655,18 +657,32 @@ const driveScene = {
 const restaurantScene = {
   open(ui) {
     const sign = el("div", "label", "Keisari · Stuttgart-Gablenberg"); Object.assign(sign.style, {left: "50%", top: "14%"}); ui.appendChild(sign);
-    const bar = el("div", "cbar"); bar.appendChild(el("p", null, "Masaya altın varaklı sushiler ve iki bardak çay geldi."));
+    const bar = el("div", "cbar"); bar.appendChild(el("p", null, "Masaya sushiler geldi."));
     const box = el("div"); this.go = el("button", "btn", "Afiyet olsun!"); this.go.type = "button";
     this.go.addEventListener("click", () => this.eat()); box.appendChild(this.go); bar.appendChild(box); ui.appendChild(bar);
-    this.bar = bar;
+    this.bar = bar; this.wx = null; this.drinks = false; this.arrive = null;
   },
   key(k) { if (k === "e" || k === "E" || k === "Enter") this.eat(); },
+  walk(to, then) { if (this.wx === null) this.wx = 330; this.wt = to; this.arrive = then; },
   cancel() {},
   eat() {
     if (this.go.disabled) return;
     this.go.disabled = true; this.bar.hidden = true;
+    this.walk(146, () => say([
+      {who: "Garson", text: "İyi akşamlar! İçecek olarak ne alırdınız?"},
+      {who: HER, text: "Ben bir Gin Basil Smash alayım lütfen."},
+      {who: CONFIG.fromName, text: "Bana da bir Gin Tonic. Teşekkürler."},
+      {who: "Garson", text: "Hemen getiriyorum!"},
+    ], () => this.walk(340, () => setTimeout(() => this.walk(146, () => {
+      this.drinks = true;
+      say([{who: "Garson", text: "Bir Gin Basil Smash, bir de Gin Tonic. Afiyet olsun!"}], () => this.walk(340, () => { this.wx = null; this.talk(); }));
+    }), 500))));
+  },
+  talk() {
     say([
-      {who: CONFIG.fromName, text: "Altın varaklılar senin aşkım, ben normallerle idare ederim."},
+      {who: CONFIG.fromName, text: "Şerefe aşkım!"},
+      {who: HER, text: "Şerefe canım! Bu Gin Basil Smash efsane olmuş bu arada."},
+      {who: CONFIG.fromName, text: "Somonlu olanlar senin aşkım, en sevdiğin onlar."},
       {who: HER, text: "Yaa canım benim... Bütün gün koşturdum ama gün böyle bitecekse her gün koştururum."},
       {who: CONFIG.fromName, text: "Yarın tenisin var ama, çok yorulma. Mert'e de benden selam söyle."},
       {who: HER, text: "Söylerim. Ama önce şu son sushiyi kim yiyecek, onu konuşalım."},
@@ -683,12 +699,27 @@ const restaurantScene = {
     C(0, 150, 320, 30, "#4a2f26");
     personAt(cctx, 70, 66, PEOPLE.her, 1, 0, glasses, 4);
     personAt(cctx, 218, 66, PEOPLE.Kerem, -1, 0, null, 4);
+    if (this.wx !== null) {
+      const d = this.wt - this.wx; this.wx += Math.sign(d) * Math.min(Math.abs(d), 3);
+      const moving = Math.abs(d) > 0.5;
+      personAt(cctx, Math.round(this.wx), 44, PEOPLE.Garson, d < 0 || !moving ? -1 : 1, moving ? 1 + (Math.floor(frame / 6) % 2) : 0, null, 4);
+      if (!this.drinks || moving) { C(Math.round(this.wx) - 4, 82, 6, 8, "#ffffff"); C(Math.round(this.wx) - 3, 84, 4, 1, "#9aa"); C(Math.round(this.wx) - 3, 86, 3, 1, "#9aa"); }
+      if (!moving && this.arrive) { const a = this.arrive; this.arrive = null; a(); }
+    }
     C(56, 118, 208, 8, "#3a2a24"); C(60, 126, 8, 30, "#2a1e1a"); C(252, 126, 8, 30, "#2a1e1a"); C(56, 118, 208, 2, "#5a4034");
     C(118, 110, 84, 8, "#1f1f24"); C(118, 110, 84, 1, "#3a3a44");
     const nigiri = [[124, "#f08a4b"], [138, "#e05a5a"], [152, "#f08a4b"], [166, "#f4e6d0"], [180, "#e05a5a"]];
     nigiri.forEach(([x, top], i) => { C(x, 106, 11, 4, "#f7f5ef"); C(x - 1, 103, 13, 3, top); if (i % 2 === 0) C(x + 4, 102, 3, 2, "#e8c55a"); });
     for (let i = 0; i < 4; i++) { const k = (Math.floor(frame / 10) + i * 7) % 28; if (k < 4) C(124 + i * 28 + 4, 98 - k, 1, 1, "#fff3b0"); }
-    C(100, 108, 7, 10, "#e8e4da"); C(101, 109, 5, 3, "#b5522e"); C(213, 108, 7, 10, "#e8e4da"); C(214, 109, 5, 3, "#b5522e");
+    if (this.drinks) {
+      // Gin Basil Smash: kısa bardak, yeşil kokteyl, buz ve fesleğen
+      C(98, 106, 10, 12, "#dfeee6"); C(99, 108, 8, 9, "#8fc45a"); C(99, 108, 8, 1, "#b5dc7a"); C(100, 110, 3, 3, "#e8f6ee"); C(104, 112, 2, 2, "#e8f6ee");
+      C(98, 117, 10, 1, "#c9d8d0"); C(102, 102, 4, 3, "#3f8a3a"); C(103, 101, 2, 1, "#5aa64f"); C(98, 106, 1, 11, "#ffffff");
+      // Gin Tonic: uzun bardak, buz, kabarcıklar ve misket limonu
+      C(212, 100, 8, 18, "#e2edf3"); C(213, 103, 6, 14, "#eef6fa"); C(214, 105, 2, 2, "#ffffff"); C(216, 109, 2, 2, "#ffffff"); C(214, 113, 2, 2, "#ffffff");
+      if (frame % 20 < 10) C(217, 107, 1, 1, "#c9dde8"); else C(215, 111, 1, 1, "#c9dde8");
+      C(217, 98, 4, 4, "#8ac44a"); C(218, 99, 2, 2, "#c9e88a"); C(212, 100, 1, 17, "#ffffff"); C(212, 117, 8, 1, "#c9d8d0");
+    }
     C(196, 114, 22, 1, "#c9a27a"); C(196, 116, 22, 1, "#c9a27a");
   },
 };
@@ -730,7 +761,7 @@ const tennisScene = {
   },
   finish(skipped) {
     if (this.done) return; this.done = true; this.over = true; this.hitB.disabled = true;
-    const won = this.me >= 3;
+    const won = this.me >= 3; tennisWon = won && !skipped;
     const lines = skipped ? [{who: "Mert", text: "Tamam, bugünlük bu kadar. Kollarım koptu."}]
       : won ? [{who: "Mert", text: "Tamam tamam, bugün senin günün. Ama rövanş var, haberin olsun."}, {who: HER, text: "Rövanşı da alırım, hiç merak etme."}]
       : [{who: HER, text: "Off yaa, yine kaybettim. Haftaya görürsün!"}, {who: "Mert", text: "Her hafta aynı şeyi diyorsun ama."}];
@@ -828,6 +859,244 @@ const shopScene = {
   },
 };
 
+/* --- 2. gün: Schlossgarten'da piknik --- */
+let tennisWon = false;
+function PX(x, y, w, h, c) { cctx.fillStyle = c; cctx.fillRect(x / 2, y / 2, w / 2, h / 2); }
+function pcirc(cx, cy, r, col) { cctx.fillStyle = col; for (let dy = -r; dy <= r; dy++) { const dx = Math.round(Math.sqrt(r * r - dy * dy)); cctx.fillRect((cx - dx) / 2, (cy + dy) / 2, (dx * 2 + 1) / 2, .5); } }
+function pell(cx, cy, rx, ry, col) { cctx.fillStyle = col; for (let dy = -ry; dy <= ry; dy++) { const dx = Math.round(rx * Math.sqrt(1 - (dy * dy) / (ry * ry))); cctx.fillRect((cx - dx) / 2, (cy + dy) / 2, (dx * 2 + 1) / 2, .5); } }
+// Oturan karakter: sprite'ın üst kısmı + öne uzanan bacaklar (px koordinat, k = büyütme)
+function sitAt(X, Y, o, face, gl, k) {
+  const img = sprite(o, 0, gl), W = 16 * k;
+  cctx.save(); cctx.imageSmoothingEnabled = false;
+  if (face < 0) { cctx.translate((X + W) / 2, Y / 2); cctx.scale(-1, 1); } else cctx.translate(X / 2, Y / 2);
+  const S = (x, y, w, h, c) => { cctx.fillStyle = c; cctx.fillRect(x * k / 2, y * k / 2, w * k / 2, h * k / 2); };
+  cctx.drawImage(img, 0, 0, 16, 25, 0, 0, W / 2, 25 * k / 2);
+  const pl = o.pants;
+  S(4, 22, 14, 7, shade(pl, .42)); S(5, 23, 12, 5, pl); S(5, 26, 12, 1, shade(pl, .72)); S(9, 23, 1, 3, shade(pl, .8));
+  S(16, 21, 5, 8, "#1a1614"); S(17, 22, 3, 6, "#2a2420"); S(17, 22, 3, 1, "#4a4038");
+  cctx.restore();
+}
+const picnicScene = {
+  open(ui) {
+    this.t = 0; this.flash = 0; this.started = false;
+    const sign = el("div", "label", "Karlsruher Schloss · Schlossgarten"); Object.assign(sign.style, {left: "24%", top: "9%"}); ui.appendChild(sign);
+    const bar = el("div", "cbar"); bar.appendChild(el("p", null, "Güneş batmak üzere. Asya ile Nilsu sarayın arkasındaki çimenlere battaniyeyi sermiş."));
+    const box = el("div"); this.go = el("button", "btn", "Yanlarına otur"); this.go.type = "button";
+    this.go.addEventListener("click", () => this.start()); box.appendChild(this.go); bar.appendChild(box); ui.appendChild(bar);
+    this.bar = bar;
+  },
+  key(k) { if (k === "e" || k === "E" || k === "Enter") this.start(); },
+  cancel() {},
+  start() {
+    if (this.started) return; this.started = true; this.bar.hidden = true;
+    const photo = () => { this.flash = 26; setTimeout(() => say([
+      {text: "📸 Fotoğraf \"erkolar kapatılsın\" grubuna gönderildi."},
+      {who: "Asya", text: "Bu fotoğraf çerçevelenip stüdyoya asılacak, söyleyeyim."},
+      {who: HER, text: "İyi ki varsınız kızlar."},
+    ], () => setTimeout(() => closeScene(finale), 400)), 500); };
+    say([
+      {who: "Asya", text: "Sonunda geldin! Gel otur, battaniyenin en güzel köşesini sana ayırdık."},
+      {who: "Nilsu", text: "Çilekleri ben getirdim. Asya da yine sadece cips getirdi."},
+      {who: "Asya", text: "Cips de bir besin grubu, tamam mı?"},
+      {who: HER, text: "Kızlar inanmayacaksınız, dün Kerem beni Stuttgart'a sushiye götürdü."},
+      {who: "Nilsu", text: "Yuh, Keisari mi? Ne yediniz, anlat her şeyi."},
+      {who: HER, text: "Bir sürü sushi söyledik. Bir de Gin Basil Smash içtim, efsaneydi."},
+      {who: "Asya", text: "Tamam, gruba yeni kural: erkolar kapatılsın, Kerem hariç."},
+      {who: "Nilsu", text: "Kabul. Kerem istisna."},
+      {who: HER, text: tennisWon ? "Bu arada bu sabah Mert'i tenisle yendim, haberiniz olsun." : "Bu sabah Mert'e yine yenildim bu arada. Haftaya rövanş var."},
+      {who: "Asya", text: tennisWon ? "Ooo! Mert'in egosu bunu kaldırır mı acaba?" : "Mert'e söyleme ama ben senin tarafındaydım."},
+      {who: "Nilsu", text: "Bakın, güneş sarayın arkasından batıyor. Bir fotoğraf çekelim mi?"},
+      {who: HER, text: "Ne dersin?", choices: [
+        ["Çekelim! 📸", photo],
+        ["Önce şu çilekleri bitirelim", () => say([{who: "Nilsu", text: "Son çilek senin. Hadi şimdi gülümse!"}], photo)],
+      ]},
+    ]);
+  },
+  draw() {
+    const t = ++this.t;
+    // gökyüzü ve güneş
+    const g = cctx.createLinearGradient(0, 0, 0, 110); g.addColorStop(0, "#6f9fd6"); g.addColorStop(.6, "#f3c08a"); g.addColorStop(1, "#ffdcae");
+    cctx.fillStyle = g; cctx.fillRect(0, 0, 320, 110);
+    pcirc(520, 150, 30, "rgba(255,230,170,.35)"); pcirc(520, 150, 16, "#fff0c0");
+    for (let i = 0; i < 3; i++) { const c = CLOUDS[i]; const x = ((i * 260 + t * 0.15) % 760) - 120; cctx.drawImage(c, x / 2, (30 + i * 22) / 2, 40, 17); }
+    // arka ağaçlar
+    for (let x = -10; x < 660; x += 22) pcirc(x, 196 - Math.floor(hash(x, 4) * 14), 20, "#3f6e45");
+    // saray: kanatlar
+    const wall = "#efe0bc", trim = "#b5694f", slate = "#56606e";
+    for (const [x0, x1] of [[96, 254], [386, 544]]) {
+      PX(x0, 152, x1 - x0, 60, wall); PX(x0, 196, x1 - x0, 16, "#e2cfa6"); PX(x0, 152, x1 - x0, 2, "#f8ecd0"); PX(x0, 194, x1 - x0, 2, trim);
+      for (let x = x0 + 6; x < x1 - 8; x += 14) {
+        for (const y of [160, 199]) { PX(x - 1, y - 1, 10, (y === 160 ? 18 : 12) + 2, trim); PX(x, y, 8, y === 160 ? 18 : 12, "#56687a"); PX(x, y, 3, 2, "#9fb8cc"); PX(x + 3, y, 2, y === 160 ? 18 : 12, trim); }
+      }
+      for (let k = 0; k < 22; k++) PX(x0 - 2 + k * .4, 130 + k, x1 - x0 + 4 - k * .8, 1, k < 2 ? "#7a8592" : slate);
+      for (let x = x0 + 12; x < x1 - 12; x += 28) { PX(x, 136, 8, 10, wall); PX(x + 1, 138, 6, 8, "#56687a"); PX(x - 1, 133, 10, 3, slate); PX(x + 1, 131, 6, 2, slate); }
+    }
+    // saray: orta bölüm, sütunlar ve alınlık
+    PX(254, 138, 132, 74, wall); PX(254, 196, 132, 16, "#e2cfa6"); PX(254, 138, 132, 2, "#f8ecd0"); PX(254, 194, 132, 2, trim);
+    for (let x = 262; x < 380; x += 16) { PX(x - 1, 149, 10, 22, trim); PX(x, 150, 8, 20, "#56687a"); PX(x, 150, 3, 2, "#9fb8cc"); PX(x - 1, 175, 10, 14, trim); PX(x, 176, 8, 12, "#56687a"); }
+    PX(290, 148, 60, 64, "#f4e7c8"); for (const x of [294, 308, 326, 340]) { PX(x, 150, 6, 62, "#fbf3dc"); PX(x + 4, 150, 2, 62, "#dccbaa"); }
+    PX(306, 186, 28, 26, "#4a3a2c"); PX(308, 188, 24, 24, "#6b4a32"); PX(319, 188, 2, 24, "#4a3a2c");
+    for (let k = 0; k < 18; k++) PX(288 + k * 2, 146 - k, 64 - k * 4, 1, k === 0 ? trim : "#f4e7c8");
+    PX(288, 145, 64, 2, trim); PX(316, 134, 8, 6, "#e3c27a");
+    for (let k = 0; k < 26; k++) PX(252 + k * .3, 112 + k, 136 - k * .6, 1, k < 2 ? "#7a8592" : slate);
+    // saray kulesi (sekizgen, kubbe, fener ve Baden bayrağı)
+    PX(304, 52, 32, 62, wall); PX(304, 52, 4, 62, trim); PX(332, 52, 4, 62, trim); PX(316, 52, 1, 62, "#e2cfa6"); PX(323, 52, 1, 62, "#e2cfa6");
+    for (const y of [64, 86]) { PX(311, y, 6, 12, trim); PX(312, y + 1, 4, 11, "#56687a"); PX(323, y, 6, 12, trim); PX(324, y + 1, 4, 11, "#56687a"); }
+    PX(300, 50, 40, 4, "#d9c8a3"); for (let x = 301; x < 340; x += 4) PX(x, 46, 2, 4, "#d9c8a3"); PX(300, 45, 40, 2, "#d9c8a3");
+    pell(320, 40, 18, 12, "#4a5462"); PX(302, 40, 36, 6, "#4a5462"); pell(316, 36, 6, 5, "#5d6878");
+    PX(314, 20, 12, 10, "#4a5462"); PX(316, 22, 3, 6, "#ffe9a8"); PX(321, 22, 3, 6, "#ffe9a8"); pell(320, 18, 7, 4, "#4a5462");
+    PX(319, 4, 2, 12, "#c9a24a"); pcirc(320, 13, 2, "#e3c27a");
+    const wave = Math.floor(t / 12) % 2;
+    PX(321, 4, 16, 3, "#f0c419"); PX(321, 7, 16, 3 + wave, "#d33b3b"); PX(321, 10 + wave, 16, 3, "#f0c419");
+    // çimen, yol, göl
+    PX(0, 212, 640, 148, "#6fae4f");
+    for (let y = 214; y < 360; y += 10) PX(0, y, 640, 5, "#78b857");
+    for (let i = 0; i < 700; i++) { const x = Math.floor(hash(i, 3) * 640), y = 212 + Math.floor(hash(3, i) * 148); PX(x, y, 1, 2, hash(x, y) > .5 ? "#5f9b45" : "#8ac46a"); }
+    cctx.fillStyle = "#dccca6"; cctx.beginPath(); cctx.moveTo(306 / 2, 212 / 2); cctx.lineTo(334 / 2, 212 / 2); cctx.lineTo(420 / 2, 360 / 2); cctx.lineTo(220 / 2, 360 / 2); cctx.fill();
+    for (let i = 0; i < 160; i++) { const y = 214 + Math.floor(hash(i, 8) * 146), f = (y - 212) / 148, x = 306 - f * 86 + Math.floor(hash(8, i) * (28 + f * 172)); PX(x, y, 1, 1, "#c4b38c"); }
+    pell(118, 248, 104, 22, "#4f8a3a"); pell(118, 248, 100, 19, "#5a9fc9");
+    for (let i = 0; i < 9; i++) { const x = 40 + ((i * 37 + Math.floor(t / 3)) % 160), y = 238 + (i * 7) % 20; PX(x, y, 6, 1, "#8cc4e4"); }
+    for (const tx of [40, 72]) { pell(tx, 258, 10, 4, "rgba(40,90,60,.35)"); }
+    const fy = Math.sin(t / 8) * 2; PX(116, 236 + fy, 2, 12 - fy, "#d6eefa"); pcirc(117, 236 + fy, 3, "#e8f6ff"); PX(110, 248, 14, 2, "#9a9aa2");
+    for (let d = 0; d < 2; d++) {
+      const dx = 60 + ((t * 0.25 + d * 70) % 120), dy = 250 + d * 6;
+      PX(dx, dy, 8, 4, d ? "#8a6a4a" : "#f4f0e3"); PX(dx + 6, dy - 3, 3, 3, d ? "#2f7a4a" : "#f4f0e3"); PX(dx + 9, dy - 2, 2, 1, "#f0a030"); PX(dx + 7, dy - 3, 1, 1, "#1b1b1b");
+    }
+    // heykel ve banklar
+    PX(470, 226, 10, 18, "#c9c4b8"); PX(472, 210, 6, 16, "#ecebe5"); pcirc(475, 207, 3, "#ecebe5"); PX(470, 226, 10, 2, "#e0ddd4");
+    PX(540, 240, 30, 3, "#8d6e52"); PX(540, 236, 30, 2, "#8d6e52"); PX(542, 243, 2, 6, "#3a3a40"); PX(566, 243, 2, 6, "#3a3a40");
+    // Schlossgartenbahn: çimenlerin arasında dolaşan minik tren
+    cctx.save(); cctx.translate(0, -30);
+    PX(0, 284, 640, 2, "#8a7a62"); for (let x = 0; x < 640; x += 6) PX(x, 286, 3, 1, "#6e5a44");
+    const tx = ((t * 0.8) % 900) - 160;
+    PX(tx + 66, 268, 22, 14, "#c8323c"); PX(tx + 80, 260, 8, 10, "#c8323c"); PX(tx + 82, 262, 4, 4, "#bfe3f5"); PX(tx + 68, 264, 4, 6, "#2a2a30"); PX(tx + 66, 268, 22, 2, "#e04a52");
+    if (t % 30 < 20) pcirc(tx + 70, 258 - (t % 30) / 3, 3, "rgba(230,230,230,.7)");
+    for (let c = 0; c < 3; c++) {
+      const cx = tx + c * 22;
+      PX(cx, 272, 20, 10, "#2f7a4a"); PX(cx, 272, 20, 2, "#4a9a6a");
+      PX(cx + 4, 264, 4, 8, ["#8a5a3b", "#1b1b1b", "#d0a060"][c]); PX(cx + 12, 265, 4, 7, ["#3c6fb0", "#e8435a", "#6fa37a"][c]);
+    }
+    for (let x = 4; x < 90; x += 12) pcirc(tx + x, 283, 2, "#2a2a30");
+    cctx.restore();
+    // çerçeveleyen büyük ağaçlar
+    for (const [x, s] of [[24, 1], [616, -1]]) {
+      PX(x - 6, 120, 12, 120, "#5a3c28"); PX(x - 6, 120, 3, 120, "#4a3020"); PX(x - 12 * s, 230, 8, 10, "#5a3c28");
+      pcirc(x, 70, 54, "#2f5f36"); pcirc(x + 40 * s, 100, 34, "#2f5f36"); pcirc(x - 6 * s, 64, 44, "#3a7242"); pcirc(x + 30 * s, 92, 24, "#3a7242");
+      pcirc(x + 10 * s, 50, 18, "#4f9152"); pcirc(x + 44 * s, 88, 10, "#4f9152");
+      for (let i = 0; i < 40; i++) { const a = hash(x, i) * 6.28, r = hash(i, x) * 50; PX(Math.round(x + Math.cos(a) * r), Math.round(70 + Math.sin(a) * r * .9), 3, 3, i % 3 ? "#6aae62" : "#24492a"); }
+    }
+    for (let i = 0; i < 4; i++) { const ly = (t * 0.6 + i * 90) % 300, lx = 60 + i * 150 + Math.sin((t + i * 40) / 20) * 10; PX(lx, ly, 3, 2, i % 2 ? "#e0a040" : "#c9733a"); }
+    // piknik battaniyesi ve yiyecekler (diyalog kutusunun üstünde kalsın diye yukarıda)
+    cctx.save(); cctx.translate(0, -34);
+    PX(196, 302, 252, 40, "#4a7a36");
+    for (let y = 300; y < 340; y += 8) for (let x = 192; x < 448; x += 8) PX(x, y, 8, 8, ((x - 192) / 8 + (y - 300) / 8) % 2 ? "#f4f0e3" : "#d33b3b");
+    for (let y = 300; y < 340; y += 8) for (let x = 196; x < 448; x += 16) PX(x, y + 3, 8, 2, "rgba(255,255,255,.15)");
+    PX(192, 340, 256, 2, "#a82830");
+    sitAt(206, 246, PEOPLE.Asya, 1, null, 3);
+    sitAt(282, 240, PEOPLE.her, 1, glasses, 3);
+    sitAt(372, 246, PEOPLE.Nilsu, -1, "red", 3);
+    PX(330, 318, 18, 8, "#ffffff"); pcirc(335, 318, 3, "#e8435a"); pcirc(341, 317, 3, "#d33b3b"); pcirc(338, 314, 3, "#e8435a"); PX(337, 311, 2, 2, "#4f8a3a");
+    PX(250, 312, 12, 14, "#f0c419"); PX(252, 314, 8, 4, "#e8435a"); PX(250, 312, 12, 2, "#d9a441");
+    PX(306, 304, 6, 18, "#bfe3c0"); PX(307, 302, 4, 3, "#e8435a"); PX(307, 308, 4, 6, "#f4e070");
+    PX(290, 326, 6, 6, "#f4f0e3"); PX(291, 327, 4, 3, "#f0d070"); PX(354, 326, 6, 6, "#f4f0e3"); PX(355, 327, 4, 3, "#f0d070");
+    PX(412, 290, 32, 20, "#b58a50"); for (let x = 412; x < 444; x += 4) PX(x, 290, 2, 20, "#9a7040"); PX(412, 296, 32, 2, "#c9a060"); PX(414, 284, 2, 8, "#8a6a40"); PX(440, 284, 2, 8, "#8a6a40"); PX(414, 282, 28, 2, "#8a6a40");
+    PX(418, 286, 12, 4, "#e9dfc0"); PX(432, 287, 6, 3, "#d33b3b");
+    cctx.restore();
+    // fotoğraf flaşı
+    if (this.flash > 0) { cctx.fillStyle = "rgba(255,255,255," + (this.flash / 26) + ")"; cctx.fillRect(0, 0, 320, 180); this.flash--; }
+  },
+};
+
+/* --- Metro: U-Haltestelle Durlacher Tor / KIT-Campus Süd (yer altında, aydınlık, açık renk taş duvarlar) --- */
+const METRO_LINES = [["S2", "Rheinstetten"], ["1", "Oberreut"], ["S5", "Wörth"], ["2", "Siemensallee"]];
+const metroScene = {
+  open(ui) {
+    Object.assign(this, {t: 0, state: "wait", tx: 760, doors: 0, wait: 260, line: 0, boarded: false, bx: 300});
+    const sign = el("div", "label", "Durlacher Tor / KIT-Campus Süd"); Object.assign(sign.style, {left: "50%", top: "30%"}); ui.appendChild(sign);
+    const bar = el("div", "cbar"); this.msg = el("p", null, "13 metre aşağıdasın. Bir sonraki metro birazdan gelecek.");
+    const box = el("div");
+    this.board = el("button", "btn", "Metroya bin"); this.board.type = "button"; this.board.disabled = true;
+    const up = el("button", "btn ghost", "Yukarı çık"); up.type = "button"; this.up = up;
+    this.board.addEventListener("click", () => this.ride()); up.addEventListener("click", () => this.cancel());
+    box.append(this.board, up); bar.append(this.msg, box); ui.appendChild(bar);
+  },
+  key(k) { if ((k === "e" || k === "E" || k === "Enter") && !this.board.disabled) this.ride(); },
+  cancel() { if (!this.boarded) closeScene(); },
+  ride() {
+    if (this.boarded || this.state !== "open") return;
+    this.boarded = true; this.board.disabled = true; this.up.disabled = true; this.msg.textContent = "Bindin! Kapılar kapanıyor...";
+  },
+  draw() {
+    const t = ++this.t, L = METRO_LINES[this.line % METRO_LINES.length];
+    // tavan, Ingo Maurer tarzı ışık bantları
+    PX(0, 0, 640, 360, "#f8f7f3"); PX(0, 0, 640, 34, "#ffffff"); PX(0, 34, 640, 2, "#e6e3dc");
+    for (let x = 20; x < 640; x += 76) { PX(x, 10, 52, 8, "#fff6dc"); PX(x + 2, 12, 48, 4, "#ffffff"); PX(x - 6, 18, 64, 10, "rgba(255,240,200,.25)"); }
+    // arka duvar: alt kısım beyaza yakın taş bloklar
+    PX(0, 36, 640, 70, "#f4f3ef"); PX(0, 106, 640, 104, "#ece8df");
+    for (let y = 106; y < 210; y += 14) for (let x = (y / 14) % 2 ? -20 : 0; x < 640; x += 40) { PX(x, y, 39, 13, shade("#ece8df", .97 + hash(x, y) * .05)); PX(x, y + 13, 40, 1, "#dcd7cc"); }
+    // durak tabelaları
+    for (const x of [70, 470]) { PX(x, 120, 100, 18, "#1f2a3a"); PX(x + 4, 124, 12, 10, "#1f4fa0"); PX(x + 7, 126, 2, 6, "#ffffff"); PX(x + 11, 126, 2, 6, "#ffffff"); PX(x + 7, 131, 6, 1, "#ffffff"); PX(x + 22, 127, 70, 2, "#e5e5df"); PX(x + 22, 131, 50, 1, "#9aa6b8"); }
+    // asılı yolcu bilgi ekranı
+    PX(256, 36, 2, 20, "#8a8f98"); PX(382, 36, 2, 20, "#8a8f98"); PX(240, 56, 160, 30, "#2a2e36"); PX(244, 60, 152, 22, "#11141a");
+    cctx.fillStyle = "#f0b44c"; cctx.font = "5px 'Pixelify Sans', monospace";
+    const mins = this.state === "wait" ? Math.max(1, Math.ceil(this.wait / 90)) + " dk" : "şimdi";
+    cctx.fillText(L[0] + "  " + L[1], 125, 37); cctx.fillText(mins, 182, 37);
+    // sol tarafta yürüyen merdiven ve çıkış
+    for (let k = 0; k < 90; k++) PX(4 + k, 210 - k * 1.6, 3, 4, "#c9ccd2");
+    for (let k = 0; k < 90; k += 6) PX(6 + k, 206 - k * 1.6 + ((t / 2) % 6) * -1.6, 10, 2, "#9aa0a8");
+    for (let k = 0; k < 90; k++) PX(10 + k, 196 - k * 1.6, 2, 2, "#5a5f68");
+    PX(110, 64, 40, 14, "#2f7a4a"); PX(114, 68, 18, 2, "#ffffff"); PX(136, 66, 2, 8, "#ffffff"); PX(134, 68, 6, 1, "#ffffff"); PX(133, 69, 8, 1, "#ffffff");
+    // ray çukuru
+    PX(0, 210, 640, 26, "#3a3a40"); PX(0, 222, 640, 3, "#8a8f98"); PX(0, 230, 640, 3, "#8a8f98"); for (let x = (t * 0) % 20; x < 640; x += 20) PX(x, 226, 10, 8, "#5a4a3a");
+    // tren
+    if (this.state === "wait") { if (--this.wait <= 0) { this.state = "arrive"; this.tx = 760; } }
+    if (this.state === "arrive") { this.tx += (100 - this.tx) * 0.035; if (this.tx < 101) { this.tx = 100; this.state = "open"; this.openT = t; this.msg.textContent = L[0] + " " + L[1] + " yönüne giden metro geldi. Kapılar açık."; this.board.disabled = this.boarded; } }
+    if (this.state === "open") {
+      this.doors = Math.min(1, this.doors + 0.06);
+      if (this.boarded) { this.bx += (this.doorX() - this.bx) * 0.12; if (Math.abs(this.bx - this.doorX()) < 2) { this.inside = true; this.state = "close"; } }
+      else if (t - this.openT > 420) { this.state = "close"; this.board.disabled = true; }
+    }
+    if (this.state === "close") { this.doors = Math.max(0, this.doors - 0.05); if (this.doors === 0) { this.state = "leave"; this.v = 0.3; } }
+    if (this.state === "leave") {
+      this.v *= 1.06; this.tx -= this.v;
+      if (this.tx < -760) {
+        if (this.boarded) { this.state = "done"; fade("Kronenplatz'a kadar gidip geri döndün.", () => closeScene()); }
+        else { this.state = "wait"; this.wait = 300; this.line++; this.msg.textContent = "Metro gitti. Bir sonraki birazdan gelecek."; }
+      }
+    }
+    if (this.state !== "wait") {
+      const X = Math.round(this.tx);
+      for (let c = 0; c < 2; c++) {
+        const x0 = X + c * 262;
+        PX(x0, 118, 258, 100, "#d0202c"); PX(x0, 118, 258, 4, "#e8434d"); PX(x0, 190, 258, 10, "#f0c419"); PX(x0, 200, 258, 18, "#a8181f"); PX(x0, 216, 258, 2, "#5a0c10");
+        for (let w = 0; w < 6; w++) {
+          const wx = x0 + 14 + w * 40;
+          if (w % 2 === 1) { // kapı
+            const d = Math.round(this.doors * 9);
+            PX(wx - 2, 128, 32, 72, "#2a2e36"); PX(wx - d, 130, 14, 68, "#c4c8ce"); PX(wx + 14 + d, 130, 14, 68, "#c4c8ce");
+            PX(wx - d + 2, 136, 10, 26, "#9fc4dc"); PX(wx + 16 + d, 136, 10, 26, "#9fc4dc");
+          } else { PX(wx, 134, 30, 30, "#9fc4dc"); PX(wx, 134, 30, 3, "#c4e0f0"); if (hash(w + c * 7, this.line) > .4) { PX(wx + 8, 146, 8, 18, ["#3a2a20", "#8a5a3b", "#1b1b1b"][w % 3]); PX(wx + 8, 156, 8, 8, ["#3c6fb0", "#6fa37a", "#c97a6a"][(w + c) % 3]); } }
+        }
+        if (this.inside && c === 0) { PX(x0 + 102, 144, 12, 12, PEOPLE.her.hair); PX(x0 + 106, 146, 7, 8, PEOPLE.her.skin); }
+      }
+      PX(X - 10, 124, 12, 92, "#d0202c"); PX(X - 8, 132, 8, 26, "#2a2e36"); PX(X - 6, 186, 4, 4, "#fff6c0");
+      PX(X + 4, 122, 22, 10, "#11141a"); cctx.fillStyle = "#f0b44c"; cctx.font = "4px 'Pixelify Sans', monospace"; cctx.fillText(L[0], (X + 8) / 2, 64);
+    }
+    // peron
+    PX(0, 236, 640, 4, "#ffffff"); PX(0, 240, 640, 6, "#e8e4da"); for (let x = 0; x < 640; x += 6) PX(x, 241, 3, 4, "#d8d2c4");
+    PX(0, 246, 640, 114, "#ddd8cc"); for (let y = 252; y < 360; y += 16) for (let x = (y / 16) % 2 ? -30 : 0; x < 640; x += 60) { PX(x, y, 59, 15, shade("#ddd8cc", .97 + hash(x, y) * .05)); }
+    // bank ve bekleyen öğrenciler
+    PX(500, 236, 70, 4, "#8d6e52"); PX(500, 230, 70, 4, "#a5805c"); PX(504, 240, 3, 12, "#5a5f68"); PX(563, 240, 3, 12, "#5a5f68");
+    personAt(cctx, 215, 80, {hair: "#6a4a2a", long: true, shirt: "#5aa08a", pants: "#3a3a48"}, 1, 0, null, 3);
+    personAt(cctx, 280, 80, {hair: "#d9b36a", long: false, shirt: "#e0703a", pants: "#2d3a4a"}, -1, 0, null, 3);
+    if (!this.inside) {
+      const walking = this.boarded && this.state === "open" && Math.abs(this.bx - this.doorX()) > 2;
+      personAt(cctx, Math.round(this.bx) / 2, 80, PEOPLE.her, this.boarded && this.doorX() < this.bx ? -1 : 1, walking ? 1 + (Math.floor(t / 6) % 2) : 0, glasses, 3);
+    }
+  },
+  doorX() { return Math.round(this.tx) + 44; },
+};
+
 /* --- 2. gün: Annenin araması --- */
 const callScene = {
   open(ui) {
@@ -847,18 +1116,24 @@ const callScene = {
       {who: HER, text: "Dün beni Stuttgart'a sushiye götürdü anne, yaa çok tatlıydı."},
       {who: "Annem", text: "Aman ne güzel. Kıymetini bilin birbirinizin. Hadi öpüyorum seni kızım, kendine iyi bak."},
       {who: HER, text: "Ben de seni çok öpüyorum anneciğim. Görüşürüz!"},
-    ], () => { this.talking = "done"; this.st.textContent = "Arama bitti"; setTimeout(() => closeScene(finale), 900); });
+    ], () => { this.talking = "done"; this.st.textContent = "Arama bitti"; setTimeout(() => say([
+      {text: "📱 erkolar kapatılsın · Asya: kızlar schlossgarten'da piknik?? battaniye bende 🧺"},
+      {text: "📱 erkolar kapatılsın · Nilsu: geliyorum! çilekleri ben alıyorum 🍓"},
+      {who: HER, text: "Ay süper fikir! On dakikaya oradayım."},
+    ], () => { advance(); fade("Akşamüstü · Schlossgarten", () => setScene(picnicScene)); }), 900); });
     say([
       {who: "Annem", text: "Alo, Buket? Kızım nerelerdesin, iki gündür sesini duyamadım."},
       {who: HER, text: "Anneciğim yaa, kusura bakma. Dün bütün gün okuldaydım, akşam da Kerem'le çıktık."},
-      {who: "Annem", text: "Düzgün yemek yiyor musun bari? Yine kahveyle mi idare ediyorsun?"},
+      {who: "Annem", text: "Sana yaptığım buzluktaki köfteler ne alemde?"},
+      {who: HER, text: "Duruyor anne, dün akşam birkaç tanesini pişirdim. Yine çok güzel olmuş."},
+      {who: "Annem", text: "Afiyet olsun kızım. Bitince söyle, yenisini yapıp yollarım."},
       {who: HER, text: "Ne anlatsam?", choices: [
         ["Bu sabah Mert'le tenis oynadık", () => say([
-          {who: HER, text: "Yok anne, yiyorum. Bu sabah Mert'le tenis oynadık bak, spor bile yapıyorum."},
+          {who: HER, text: "Söylerim anne. Bu arada bu sabah Mert'le tenis oynadık, spor bile yapıyorum bak."},
           {who: "Annem", text: "Maşallah! Ama terli terli dışarıda durma, hasta olursun sonra."},
         ], end)],
         ["Öğlen alışverişe çıktım", () => say([
-          {who: HER, text: "Yiyorum anne merak etme. Öğlen de şehre indim, biraz kıyafet aldım."},
+          {who: HER, text: "Söylerim anne. Bu arada öğlen şehre indim, biraz kıyafet aldım."},
           {who: "Annem", text: "Yine mi kıyafet? Dolabına sığıyor mu bari?"},
           {who: HER, text: "Sığdırırız anne, sığdırırız."},
         ], end)],
@@ -883,11 +1158,11 @@ function questItem(q, onQuest, flavor) {
 }
 function pickGlasses() {
   say([{text: "Kitaplığın üstünde, vazodaki çiçeklerin yanında gözlüklerin duruyor. Bugün hangisini takacaksın?",
-    choices: [["Mavi gözlük", () => setGlasses("blue")], ["İnce kırmızı gözlük", () => setGlasses("red")]]}]);
+    choices: [["Siyah gözlük", () => setGlasses("black")], ["İnce kırmızı gözlük", () => setGlasses("red")]]}]);
 }
 function setGlasses(c) {
   glasses = c;
-  say([{text: c === "blue" ? "Mavi gözlüğünü taktın. Çok yakıştı." : "İnce kırmızı gözlüğünü taktın. Çok şık."}], () => { if (day === 1 && quest === 2) advance(); });
+  say([{text: c === "black" ? "Siyah gözlüğünü taktın. Çok yakıştı." : "İnce kırmızı gözlüğünü taktın. Çok şık."}], () => { if (day === 1 && quest === 2) advance(); });
 }
 function halilTalk() {
   say([
@@ -943,10 +1218,10 @@ const items = [
     use: questItem(6, () => zoomTo(300, 150, maketScene), "Maketin kuruyor. Dokunma!")},
   {x: 425, fy: G, label: () => "Kara tahta", use() { say([{text: "Tahtada bir kemer çizimi ve kocaman bir \"vize: 3 hafta\" yazısı var."}]); }},
   {x: 485, fy: G - 12, label: () => quest === 7 ? "Derse otur" : "Sıra",
-    use: questItem(7, () => say([{text: "Mimarlık Tarihi başlıyor. Hoca bugün Mimar Sinan'ı anlatıyor."}],
+    use: questItem(7, () => say([{text: "Mimarlık Tarihi başlıyor. Hoca bugün Mies van der Rohe'yi ve Barcelona Pavyonu'nu anlatıyor."}],
       () => fade("Ders bitti. Biraz da dinlen...", null, advance)), "Amfi boşaldı.")},
   {x: 640, fy: G, label: () => "Tabela", use() { say([{text: "KIT · Karlsruher Institut für Technologie. Sağa: KIT-Bibliothek ve kafeterya. Kampüs küçük bir köy gibi."}]); }},
-  {x: 724, fy: G, label: () => "Tramvay durağı", use() { say([{text: "Durak: Durlacher Tor / KIT-Campus Süd. Kırmızı tramvay yine tıklım tıklım."}]); }},
+  {x: 724, fy: G, label: () => "Metroya in", use() { zoomTo(722, 165, metroScene); }},
   {x: 784, fy: G, label: () => "Bisikletler", use() { say([{text: "Karlsruhe'de herkes bisikletli. Kütüphanenin bisiklet parkı yine dolu."}]); }},
   {x: 1172, fy: G, label: () => "Park yeri", use() { say([{text: day === 1 && quest >= 10 ? "Arabalar burada bekleyebiliyor." : "Boş bir park yeri. Akşam biri burada bekleyecek gibi..."}]); }},
   {x: 840, fy: G, label: () => "Kitaplıklar", use() { say([{text: "Raflarda mimarlık kitapları. Le Corbusier yine ödünç alınmış."}]); }},
@@ -1101,7 +1376,7 @@ const LEGS = [
   ["...llllllll...", "....lllllll...", "....lllLll....", ".....llLll....", ".....bbbbbb...", ".....bbbbbbb.."],
 ];
 const GLASSES = {
-  blue: [[5,7],[6,7],[7,7],[8,7],[10,7],[11,7],[12,7],[13,7],[5,8],[9,8],[13,8],[5,9],[13,9],[6,10],[7,10],[11,10],[12,10]],
+  black: [[5,7],[6,7],[7,7],[8,7],[10,7],[11,7],[12,7],[13,7],[5,8],[9,8],[13,8],[5,9],[13,9],[6,10],[7,10],[11,10],[12,10]],
   red: [[5,7],[6,7],[7,7],[8,7],[10,7],[11,7],[12,7],[13,7],[9,8],[5,8],[13,8]],
 };
 const spriteCache = new Map();
@@ -1114,7 +1389,7 @@ function sprite(o, walk, gl) {
     b: "#2a2420", B: "#4a4038", w: o.mustache || skin};
   const rows = (o.long ? HEAD_F : HEAD_M).concat(o.long ? BODY_F : BODY_M, LEGS[walk] || LEGS[0]);
   const grid = rows.map(r => [...r].map(ch => ch === "." ? null : pal[ch]));
-  if (gl && GLASSES[gl]) GLASSES[gl].forEach(([x, y]) => { grid[y][x] = gl === "blue" ? "#2f63c9" : "#d33b3b"; });
+  if (gl && GLASSES[gl]) GLASSES[gl].forEach(([x, y]) => { grid[y][x] = gl === "black" ? "#1c1a20" : "#d33b3b"; });
   c = document.createElement("canvas"); c.width = 16; c.height = 32; const g = c.getContext("2d");
   const at = (x, y) => (x >= 0 && y >= 0 && x < 14 && y < 30) ? grid[y][x] : null;
   for (let y = -1; y <= 30; y++) for (let x = -1; x <= 14; x++) {
@@ -1180,7 +1455,7 @@ function door(x, y, w, h, col) {
   for (const py of [y + 4, y + h / 2 + 2]) { F(x + 3, py, w - 6, ph, shade(col, .85)); F(x + 3, py, w - 6, 1, shade(col, .7)); F(x + 3, py + ph - 1, w - 6, 1, shade(col, 1.12)); }
   F(x + w - 5, y + h / 2, 2, 2, "#e3c27a");
 }
-const GLYPH = {K: ["101", "110", "100", "110", "101"], I: ["111", "010", "010", "010", "111"], T: ["111", "010", "010", "010", "010"], P: ["110", "101", "110", "100", "100"]};
+const GLYPH = {K: ["101", "110", "100", "110", "101"], I: ["111", "010", "010", "010", "111"], T: ["111", "010", "010", "010", "010"], P: ["110", "101", "110", "100", "100"], U: ["101", "101", "101", "101", "111"]};
 function text(str, x, y, col, s = 1) { [...str].forEach((ch, i) => GLYPH[ch].forEach((row, r) => [...row].forEach((b, c) => { if (b === "1") F(x + i * 4 * s + c * s, y + r * s, s, s, col); }))); }
 const BOOKC = ["#d33b3b", "#3b6fd1", "#e1ae36", "#6fa37a", "#8a5cc2", "#ee6c4d", "#2f7a6a", "#c9b493"];
 
@@ -1189,7 +1464,6 @@ function drawGroundBG() {
   speckle(0, 346, WORLD * 2, 14, "#6a5040", .12, .8, 1.15);
   F(0, 346, WORLD * 2, 1, "#4e3a2e");
   for (let i = 0; i < 320; i++) { const x = Math.floor(hash(i, 7) * WORLD * 2), y = 349 + Math.floor(hash(7, i) * 9); F(x, y, 3, 2, "#857565"); F(x, y, 3, 1, "#9a8a7a"); }
-  F(1176, 342, 396, 1, "#5a5a60"); F(1176, 344, 396, 1, "#5a5a60");
 }
 
 function drawHomeBG() {
@@ -1372,9 +1646,18 @@ function drawCampusBG() {
   for (let r = 0; r < 5; r++) F(1380, 224 + r * 24, 120, 1, "#93a0a6");
   for (let c = 0; c < 6; c++) for (let r = 0; r < 5; r++) win(1390 + c * 18, 212 + r * 24, 8, 10, {frame: "#5d6f84", glass: "#7fb0d0", bars: false});
   F(1274, 296, 2, 44, "#6b4a32"); F(1260, 280, 32, 16, "#009682"); F(1260, 280, 32, 1, "#2ab8a2"); F(1260, 295, 32, 1, "#007060"); text("KIT", 1265, 285, "#ffffff", 1);
-  F(1416, 296, 54, 3, "#3a3a40"); F(1418, 299, 2, 41, "#5a5a60"); F(1466, 299, 2, 41, "#5a5a60"); F(1420, 299, 46, 30, "rgba(190,220,240,.35)");
-  F(1424, 326, 30, 2, "#8d6e52"); F(1426, 328, 1, 12, "#5a5a60"); F(1450, 328, 1, 12, "#5a5a60");
-  F(1444, 292, 2, 48, "#5a5a60"); circ(1445, 286, 6, "#f0c419"); F(1442, 283, 1, 6, "#2f7a4a"); F(1447, 283, 1, 6, "#2f7a4a"); F(1442, 286, 6, 1, "#2f7a4a");
+  // Metro (U-Bahn) girişi: yer altına inen merdiven, cam saçak ve "U" tabelası
+  F(1410, 340, 60, 20, "#1c1c24");
+  for (let i = 0; i < 7; i++) { const x = 1412 + i * 8, y = 340 + i * 3; F(x, y, 58 - i * 8, 3, shade("#9a9aa2", 1 - i * .11)); F(x, y, 58 - i * 8, 1, shade("#c4c4cc", 1 - i * .11)); }
+  F(1410, 340, 2, 20, "#5a5a60"); F(1468, 340, 2, 20, "#5a5a60");
+  F(1408, 302, 3, 38, "#4a4f58"); F(1469, 298, 3, 42, "#4a4f58");
+  for (let k = 0; k < 68; k++) F(1406 + k, 302 - Math.floor(k / 16), 1, 3, "#3a3f48");
+  for (let k = 0; k < 64; k++) F(1408 + k, 305 - Math.floor(k / 16), 1, 1, "#8fb8d0");
+  F(1411, 306, 58, 24, "rgba(170,210,235,.28)"); F(1414, 308, 1, 20, "rgba(255,255,255,.35)"); F(1440, 307, 1, 21, "rgba(255,255,255,.25)");
+  F(1411, 328, 58, 2, "#6a6f78"); for (let x = 1414; x < 1468; x += 9) F(x, 330, 1, 10, "#6a6f78"); F(1411, 330, 58, 1, "#8a8f98");
+  F(1486, 270, 6, 70, "#3a3f48"); F(1484, 336, 10, 4, "#2a2e36");
+  F(1481, 256, 16, 16, "#ffffff"); F(1482, 257, 14, 14, "#1f4fa0"); text("U", 1486, 259, "#ffffff", 2);
+  F(1478, 274, 22, 8, "#2a2e36"); F(1480, 276, 18, 1, "#e5e5df"); F(1480, 279, 12, 1, "#e5e5df");
 }
 
 function bike(cx, col) {
@@ -1572,7 +1855,6 @@ function draw() {
       if (ring) { Q(308, 174, 1, 3, "#f0b44c"); Q(297, 172, 1, 3, "#f0b44c"); Q(310, 178, 1, 2, "#f0b44c"); }
     }
   } else { Q(300, 186, 28, 6, "#6fa37a"); Q(300, 186, 28, 1, "#8fc39a"); for (let k = 304; k < 328; k += 6) Q(k, 187, 2, 5, "#5f936a"); }
-  drawTram();
   if (day === 1 && quest >= 10) drawCar(car.x);
   // gece: karart, sonra ışıklar
   if (nf > 0) {
