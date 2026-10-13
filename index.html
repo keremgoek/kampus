@@ -280,7 +280,7 @@ const CONFIG = {
   herName: "Buket",
   fromName: "Kerem",
   outroTitle: "İyi ki varsın",
-  letter: "İki gün boyunca koşturdun: stüdyo, ders, kütüphane, tenis, alışveriş, piknik, Oxford...\nGünün sonunda seni görmek benim en sevdiğim an.\nSeni seviyorum.",
+  letter: "İki gün boyunca koşturdun: stüdyo, ders, kütüphane, tenis, alışveriş, piknik, film gecesi...\nGünün sonunda seni görmek benim en sevdiğim an.\nSeni seviyorum.",
 };
 const HER = CONFIG.herName;
 
@@ -330,6 +330,8 @@ const PEOPLE = {
   Jeren: {hair: "#2a1a14", long: true,  shirt: "#e0a040", pants: "#3a3550", skin: "#c99872"},
   Eren:  {hair: "#4a3020", long: false, shirt: "#3a8a8a", pants: "#2d2d38"},
   Barmen: {hair: "#8a5a3b", long: false, shirt: "#f4f0e3", pants: "#26262c", vest: "#2f5a3a", mustache: "#6a4426"},
+  Thilo: {hair: "#e8c870", long: false, shirt: "#5d7a9a", pants: "#3a3a48", skin: "#f6dcc8"},
+  Rafael: {hair: "#1b1b1b", long: false, wavy: true, shirt: "#7a5aa0", pants: "#2d2d38", skin: "#c48a64"},
   Garson: {hair: "#1b1b1b", long: false, shirt: "#f4f0e3", pants: "#26262c", vest: "#1f1f24"},
   Halil: {hair: "#bdbdbd", long: false, shirt: "#efeee8", pants: "#4a4a52", vest: "#6b4a32", mustache: "#8d8d8d", skin: "#e2b38e"},
 };
@@ -360,7 +362,7 @@ const QUESTS = {1: [
   {t: "Eve dön, yatakta biraz kestir", time: "15:00", x: 154, home: true},
   {t: "Annen arıyor, telefonu aç", time: "17:00", x: 154, home: true},
   {t: "Schlossgarten'da kızlarla piknik yap", time: "18:30", x: 154, home: true},
-  {t: "Oxford Pub'da herkesle buluş", time: "20:30", x: 154, home: true},
+  {t: "Kerem'in WG'sine git, film gecesi", time: "20:30", x: 154, home: true},
 ]};
 let day = 1, quests = QUESTS[1];
 
@@ -936,9 +938,9 @@ const picnicScene = {
       {text: "📸 Fotoğraf \"erkolar kapatılsın\" grubuna gönderildi."},
       {who: "Asya", text: "Bu fotoğraf çerçevelenip stüdyoya asılacak, söyleyeyim."},
       {who: HER, text: "İyi ki varsınız kızlar."},
-      {who: "Nilsu", text: "Hadi Oxford'a geçelim, herkes orada! Eren de geliyormuş."},
-      {who: "Asya", text: "Buket'in evine beş dakika zaten. Kalkın kalkın."},
-    ], () => { advance(); fade("Akşam · Oxford Pub", () => setScene(pubScene)); }), 500); };
+      {who: HER, text: "Kızlar ben kaçıyorum, Kerem'le film gecemiz var."},
+      {who: "Asya", text: "Ooo, film gecesi! Kerem'e selam söyle."},
+    ], () => { advance(); fade("Akşam · Kerem'in WG'si", () => setScene(wgScene)); }), 500); };
     say([
       {who: "Asya", text: "Sonunda geldin! Gel otur, battaniyenin en güzel köşesini sana ayırdık."},
       {who: "Nilsu", text: "Çilekleri ben getirdim. Asya da yine sadece cips getirdi."},
@@ -1227,94 +1229,112 @@ const dmScene = {
 // circ() statik katmana çizer; yakın plan tuvaline px koordinatla çizmek için küçük bir sarmalayıcı
 const cctxPX = {set fillStyle(c) { cctx.fillStyle = c; }, fillRect(x, y, w, h) { cctx.fillRect(x / 2, y / 2, w / 2, h / 2); }};
 
-/* --- 2. gün akşamı: Buket'in evine yakın öğrenci barı Oxford Pub --- */
-// Sahnedeki herkes: [kişi, x (birim), yön]. Eren'in diyaloğu yok, sadece Nilsu'nun yanında duruyor.
-const PUB_CROWD = [
-  ["Kerem", 112, 1], ["her", 128, -1],
-  ["Asya", 152, 1], ["Nilsu", 168, 1], ["Eren", 183, -1],
-  ["Mert", 204, 1], ["Emir", 219, -1],
-  ["Ali", 240, 1], ["Cagla", 255, 1], ["Emre", 274, -1], ["Jeren", 289, -1],
-];
-const pubScene = {
+/* --- 2. gün akşamı: Kerem'in WG'si. Önce koridorda Thilo ve Rafael, sonra Kerem'in odasında projeksiyonla film --- */
+const wgScene = {
   open(ui) {
-    this.t = 0; this.started = false; this.dart = 0;
-    const sign = el("div", "label", "Oxford Pub · Studentenkneipe"); Object.assign(sign.style, {left: "50%", top: "7%"}); ui.appendChild(sign);
-    const bar = el("div", "cbar"); bar.appendChild(el("p", null, "Oxford Pub dolu: herkes burada, Kerem de bar tezgahının yanında bekliyor."));
-    const box = el("div"); this.go = el("button", "btn", "İçeri gir"); this.go.type = "button";
-    this.go.addEventListener("click", () => this.start()); box.appendChild(this.go); bar.appendChild(box); ui.appendChild(bar);
+    this.t = 0; this.phase = "hall"; this.busy = false; this.film = 0;
+    this.sign = el("div", "label", "Kerem'in WG'si · koridor"); Object.assign(this.sign.style, {left: "50%", top: "7%"}); ui.appendChild(this.sign);
+    const bar = el("div", "cbar"); this.msg = el("p", null, "Kapıyı Thilo açtı. Koridorda Rafael de var.");
+    const box = el("div"); this.go = el("button", "btn", "Selam ver"); this.go.type = "button";
+    this.go.addEventListener("click", () => this.next()); box.appendChild(this.go); bar.append(this.msg, box); ui.appendChild(bar);
     this.bar = bar;
   },
-  key(k) { if (k === "e" || k === "E" || k === "Enter") this.start(); },
+  key(k) { if (k === "e" || k === "E" || k === "Enter") this.next(); },
   cancel() {},
-  start() {
-    if (this.started) return; this.started = true; this.bar.hidden = true;
-    const end = () => say([
-      {who: CONFIG.fromName, text: "Güzel bir hafta sonuydu, değil mi aşkım?"},
-      {who: HER, text: "En güzeli. Hepiniz iyi ki varsınız."},
-      {who: "Ali", text: "Şerefe o zaman!"},
-      {text: "Herkes kadehini kaldırdı. 🍻"},
-    ], () => setTimeout(() => closeScene(finale), 500));
-    say([
-      {who: CONFIG.fromName, text: "Aşkım, buradayız! Sana bir bira söyledim bile."},
-      {who: "Ali", text: "Buket! Sonunda. Piknikten mi geliyorsunuz?"},
-      {who: "Çağla", text: "Bizi de çağırsaydınız ya, ben de çilek severim."},
-      {who: "Asya", text: "\"erkolar kapatılsın\" grubundaydı, siz grupta yoksunuz ki."},
-      {who: "Emre", text: "Grubun adı ne dedin?"},
-      {who: "Jeren", text: "Sorma Emre, hiç sorma."},
-      {who: "Nilsu", text: "Kerem ve Eren istisna bu arada, kural öyle."},
-      {who: "Mert", text: tennisWon ? "Buket bu sabah beni tenisle yendi, herkes duysun. Rövanş haftaya." : "Buket'i bu sabah yine yendim bu arada. Ama iyi oynadı, hakkını yemeyeyim."},
-      {who: "Emir", text: "Dart oynayan var mı? Kaybeden bir round ısmarlar."},
-      {who: HER, text: "Ne yapsam?", choices: [
-        ["Dart oynayalım 🎯", () => { this.dart = 1; say([
-          {text: "Buket nişan aldı, attı..."},
-          {who: "Emir", text: "Tam ortadan! Bullseye! Tamam, round benden."},
-          {who: "Jeren", text: "Emir yine kaybetti, şaşırdık mı?"},
-        ], end); }],
-        ["Bu round benden 🍻", () => say([
-          {who: HER, text: "Bu round benden! Herkes ne içiyor?"},
-          {who: "Emre", text: "Ben bir Pils alayım."},
-          {who: "Çağla", text: "Bana da bir Aperol, teşekkürler canım."},
-        ], end)],
-      ]},
-    ]);
+  next() {
+    if (this.busy) return; this.busy = true; this.bar.hidden = true;
+    if (this.phase === "hall") {
+      say([
+        {who: "Thilo", text: "Hallo Buket! Komm rein, Kerem ist in seinem Zimmer."},
+        {who: HER, text: "Hallo Thilo! Wie geht's?"},
+        {who: "Thilo", text: "Gut, gut. Ich koche gerade Nudeln, willst du auch was?"},
+        {who: HER, text: "Danke, wir haben Popcorn!"},
+        {who: "Rafael", text: "Hey Buket! Kerem hat den Beamer schon aufgebaut. Viel Spaß beim Film!"},
+        {who: HER, text: "Danke Rafael! Bis später."},
+      ], () => {
+        fade("Kerem'in odası", () => {
+          this.phase = "room"; this.film = 0; this.sign.textContent = "Kerem'in odası · film gecesi";
+          this.msg.textContent = "Projeksiyon hazır, patlamış mısır yatağın üstünde."; this.go.textContent = "Filmi başlat";
+          this.bar.hidden = false; this.busy = false;
+        });
+      });
+    } else {
+      this.film = 1; this.filmT = this.t;
+      setTimeout(() => say([
+        {who: CONFIG.fromName, text: "Bu akşam Me Before You var aşkım. Emilia Clarke'lı olan."},
+        {who: HER, text: "Yaaa! Emilia Clarke'a bayılıyorum, sen de biliyorsun."},
+        {who: CONFIG.fromName, text: "Biliyorum, o yüzden seçtim. Patlamış mısır senin tarafında."},
+        {text: "Film başladı. Buket başını Kerem'in omzuna koydu."},
+        {who: HER, text: "Sonu çok üzücüymüş diyorlar, mendil lazım olacak galiba..."},
+        {who: CONFIG.fromName, text: "Bugün dm'den aldığın Allzwecktücher'i getireyim mi?"},
+        {who: HER, text: "Onlar masa için aşkım! Ama yine de getir, ne olur ne olmaz."},
+        {text: "Film bitti, ikisi de biraz ağladı. Dışarıda Karlsruhe çoktan uyumuştu."},
+      ], () => setTimeout(() => closeScene(finale), 400)), 2600);
+    }
   },
-  draw() {
-    const t = ++this.t;
-    // tavan kirişleri, duvarlar, ahşap lambri
-    PX(0, 0, 640, 360, "#4a2a24"); for (let x = 0; x < 640; x += 6) PX(x, 40, 1, 120, "#552f28");
-    PX(0, 0, 640, 30, "#3a2018"); for (let x = 20; x < 640; x += 120) { PX(x, 0, 18, 30, "#2a160f"); PX(x, 28, 18, 4, "#1f100b"); }
-    PX(0, 150, 640, 120, "#5a3a24"); for (let x = 0; x < 640; x += 32) { PX(x, 150, 1, 120, "#3e2618"); PX(x + 4, 160, 24, 46, "#6a4630"); PX(x + 4, 214, 24, 46, "#6a4630"); }
-    PX(0, 146, 640, 6, "#7a5232"); PX(0, 146, 640, 1, "#9a7050");
-    PX(0, 268, 640, 92, "#3a2416"); for (let y = 272; y < 360; y += 10) PX(0, y, 640, 1, "#2e1c10");
-    // sarkıt lambalar
-    for (const x of [140, 320, 500]) { PX(x, 30, 1, 22, "#1f100b"); PX(x - 10, 52, 21, 8, "#2a5a3a"); PX(x - 6, 60, 13, 2, "#ffe0a0"); pcirc(x, 70, 26, "rgba(255,210,140,.10)"); }
-    // arka raf ve şişeler, ayna
-    PX(16, 50, 220, 96, "#2a160f"); PX(24, 58, 204, 34, "#c9b48a"); PX(26, 60, 200, 30, "#7a8a8a"); PX(30, 62, 60, 26, "rgba(255,255,255,.12)");
-    for (const y of [96, 120]) { PX(20, y + 20, 212, 3, "#7a5232"); for (let x = 26; x < 226; x += 9) { const c = ["#2f7a4a", "#8a3c2c", "#d9a441", "#3b5f9a", "#e8e4da"][Math.floor(hash(x, y) * 5)], h = 12 + Math.floor(hash(y, x) * 8); PX(x, y + 20 - h, 5, h, c); PX(x + 1, y + 20 - h - 3, 3, 3, c); PX(x + 1, y + 22 - h, 1, h - 6, "rgba(255,255,255,.35)"); } }
-    // dart tahtası, kara tahta, çerçeveler
-    pcirc(580, 92, 22, "#1f1f24"); pcirc(580, 92, 18, "#e8e0c8"); pcirc(580, 92, 14, "#2a2a30"); pcirc(580, 92, 10, "#d33b3b"); pcirc(580, 92, 6, "#e8e0c8"); pcirc(580, 92, 3, "#2f7a4a"); PX(579, 91, 2, 2, "#d33b3b");
-    if (this.dart) { PX(579, 86, 2, 8, "#f0c419"); PX(578, 84, 4, 3, "#e8435a"); }
-    PX(420, 60, 90, 70, "#6b4a32"); PX(424, 64, 82, 62, "#22282a"); for (let i = 0; i < 6; i++) { PX(430, 70 + i * 9, 40 + (i % 3) * 10, 2, "#e5e5df"); PX(492, 70 + i * 9, 8, 2, "#f0b44c"); }
-    PX(270, 64, 40, 30, "#c9a24a"); PX(273, 67, 34, 24, "#3b5f9a"); PX(287, 67, 6, 24, "#f4f0e3"); PX(273, 76, 34, 6, "#f4f0e3"); PX(289, 67, 2, 24, "#c8323c"); PX(273, 78, 34, 2, "#c8323c");
-    PX(330, 70, 30, 36, "#c9a24a"); PX(333, 73, 24, 30, "#e8dcc0"); PX(338, 80, 14, 16, "#8a6a4a");
-    // barmen (tezgahın arkasında)
-    personAt(cctx, 60, 58, PEOPLE.Barmen, 1, 0, null, 2);
-    // bar tezgahı ve bira muslukları
-    PX(14, 176, 230, 96, "#6a3e22"); PX(10, 170, 238, 8, "#a5703c"); PX(10, 170, 238, 2, "#c99a5a"); for (let x = 18; x < 244; x += 28) { PX(x, 184, 22, 80, "#7a4a2a"); PX(x, 184, 22, 1, "#8a5a36"); }
-    PX(14, 262, 230, 4, "#c9a24a");
-    for (const x of [70, 90, 110]) { PX(x, 146, 4, 24, "#c9a24a"); PX(x - 2, 142, 8, 6, ["#2f7a4a", "#8a3c2c", "#1f1f24"][(x / 20) % 3]); PX(x, 152, 1, 14, "#f0d07a"); }
-    PX(150, 158, 10, 12, "rgba(240,200,100,.85)"); PX(150, 156, 10, 3, "#ffffff"); PX(176, 160, 9, 10, "rgba(240,200,100,.85)"); PX(176, 158, 9, 2, "#ffffff");
-    // yüksek masalar
-    for (const x of [340, 470]) { PX(x, 196, 60, 6, "#7a4a2a"); PX(x, 196, 60, 1, "#a5703c"); PX(x + 28, 202, 4, 66, "#3a2416"); PX(x + 18, 264, 24, 4, "#3a2416"); PX(x + 10, 184, 8, 12, "rgba(240,200,100,.85)"); PX(x + 10, 182, 8, 3, "#ffffff"); PX(x + 40, 186, 7, 10, "rgba(230,110,60,.85)"); }
-    // kalabalık
-    PUB_CROWD.forEach(([who, x, f], i) => {
-      const o = who === "her" ? PEOPLE.her : PEOPLE[who];
-      const bob = Math.sin(t / 30 + i) > .92 ? -0.5 : 0;
-      personAt(cctx, x, 99 + bob, o, f, 0, who === "her" ? glasses : who === "Nilsu" ? "red" : who === "Ali" ? "round" : null, 2);
-    });
-    // sıcak ışık
-    cctx.fillStyle = "rgba(255,180,90,.06)"; cctx.fillRect(0, 0, 320, 180);
+  drawHall() {
+    // duvar, zemin, tavan lambası
+    PX(0, 0, 640, 360, "#ece5d6"); PX(0, 0, 640, 24, "#f6f1e6"); PX(0, 24, 640, 2, "#d8cfbd");
+    PX(316, 24, 2, 16, "#5a5a60"); PX(304, 40, 26, 8, "#f0d9a8"); PX(308, 48, 18, 2, "#fff3c4"); pcirc(317, 60, 40, "rgba(255,240,200,.12)");
+    PX(0, 262, 640, 98, "#b08a5e"); for (let y = 266; y < 360; y += 12) { PX(0, y, 640, 1, "#9a7650"); for (let x = (y / 12) % 2 ? 40 : 0; x < 640; x += 80) PX(x, y, 1, 12, "#9a7650"); }
+    PX(0, 254, 640, 8, "#f4f0e6"); PX(0, 254, 640, 1, "#ffffff");
+    // kapılar ve isim etiketleri
+    for (const [x, name] of [[40, "THILO"], [250, "RAFAEL"], [500, "KEREM"]]) {
+      PX(x - 3, 96, 82, 160, "#e0d6c2"); PX(x, 100, 76, 156, "#f7f4ee"); PX(x + 4, 106, 68, 66, "#efeae0"); PX(x + 4, 182, 68, 66, "#efeae0");
+      PX(x + 62, 176, 8, 3, "#9aa0a6"); PX(x + 18, 120, 40, 12, "#ffffff"); PX(x + 18, 120, 40, 1, "#c9c4b8");
+      cctx.fillStyle = "#3a3a40"; cctx.font = "5px 'Pixelify Sans', monospace"; cctx.fillText(name, (x + 22) / 2, 64);
+    }
+    PX(536, 140, 20, 14, "#e8435a"); PX(540, 143, 3, 3, "#ffffff"); PX(547, 143, 3, 3, "#ffffff"); PX(540, 149, 10, 2, "#ffffff"); // Kerem'in kapısındaki çıkartma
+    // ayakkabılık, askılık, Putzplan, bisiklet
+    PX(140, 230, 90, 26, "#8d6e52"); PX(140, 230, 90, 3, "#a8875f"); for (let x = 146; x < 226; x += 20) { PX(x, 222, 14, 8, ["#2a2420", "#f4f4f0", "#3b6fd1", "#d33b3b"][(x / 20) % 4]); PX(x, 228, 14, 2, "#1a1614"); }
+    PX(150, 70, 70, 4, "#6b4a32"); for (const [x, c] of [[156, "#2f5a3a"], [176, "#c97a6a"], [198, "#3a3a48"]]) { PX(x + 2, 74, 2, 4, "#3a3a40"); PX(x - 4, 78, 18, 50, c); PX(x - 4, 78, 18, 3, shade(c, 1.2)); }
+    PX(360, 70, 46, 60, "#ffffff"); PX(360, 70, 46, 8, "#3b6fd1"); for (let r = 0; r < 4; r++) { PX(364, 84 + r * 11, 14, 2, "#9aa"); PX(384, 82 + r * 11, 6, 6, r % 2 ? "#6fa37a" : "#e8435a"); PX(394, 82 + r * 11, 6, 6, "#e8e4da"); }
+    PX(372, 72, 22, 3, "#ffffff");
+    PX(586, 228, 20, 26, "#9b6a46"); PX(584, 226, 24, 4, "#b07a52"); pcirc(596, 210, 16, "#3f7a46"); pcirc(586, 202, 8, "#4f9152"); pcirc(606, 204, 8, "#4f9152"); // saksı
+    // karakterler
+    personAt(cctx, 66, 82, PEOPLE.Thilo, 1, 0, null, 3);
+    personAt(cctx, 112, 82, PEOPLE.Rafael, 1, 0, null, 3);
+    personAt(cctx, 196, 82, PEOPLE.her, -1, 0, glasses, 3);
   },
+  drawRoom() {
+    const t = this.t, ft = this.film ? t - this.filmT : 0;
+    // karanlık oda, ışık zinciri
+    PX(0, 0, 640, 360, "#262036"); PX(0, 262, 640, 98, "#3a2c2a"); for (let y = 266; y < 360; y += 12) PX(0, y, 640, 1, "#30241f");
+    for (let x = 0; x < 640; x += 3) { const y = 22 + Math.round(Math.sin(x / 640 * Math.PI) * 10); PX(x, y, 3, 1, "#4a4458"); if (x % 24 === 0) PX(x, y + 1, 3, 3, (Math.floor(t / 20) + x / 24) % 3 ? "#ffd36a" : "#ff9fb3"); }
+    // perde / projeksiyon yüzeyi
+    PX(46, 46, 340, 196, "#3a3448"); const S = {x: 52, y: 52, w: 328, h: 184};
+    if (!this.film) { PX(S.x, S.y, S.w, S.h, "#4a4458"); }
+    else if (ft < 140) {
+      PX(S.x, S.y, S.w, S.h, "#0e0e12");
+      cctx.globalAlpha = Math.min(1, ft / 40); cctx.fillStyle = "#f4f0e3"; cctx.font = "12px 'Pixelify Sans', monospace"; cctx.textAlign = "center";
+      cctx.fillText("Me Before You", (S.x + S.w / 2) / 2, (S.y + S.h / 2) / 2); cctx.textAlign = "start"; cctx.globalAlpha = 1;
+    } else {
+      // filmden genel bir an: kır manzarası, uzakta bir kale, yan yana iki küçük siluet
+      const pan = ((ft - 140) * 0.2) % 120;
+      const g = cctx.createLinearGradient(0, S.y / 2, 0, (S.y + S.h) / 2); g.addColorStop(0, "#9cc8e8"); g.addColorStop(1, "#f6e2b8");
+      cctx.fillStyle = g; cctx.fillRect(S.x / 2, S.y / 2, S.w / 2, S.h / 2);
+      cctx.save(); cctx.beginPath(); cctx.rect(S.x / 2, S.y / 2, S.w / 2, S.h / 2); cctx.clip();
+      for (let x = S.x - 40; x < S.x + S.w + 40; x += 4) { const h = 50 + Math.sin((x + pan) / 40) * 12; PX(x, S.y + S.h - h, 4, h, "#6f9a5a"); }
+      for (let x = S.x - 40; x < S.x + S.w + 40; x += 4) { const h = 28 + Math.sin((x + pan * 1.6) / 26) * 6; PX(x, S.y + S.h - h, 4, h, "#5a8a4a"); }
+      const cx = S.x + 230 - pan * .3; PX(cx, S.y + 96, 40, 50, "#8a8070"); PX(cx - 6, S.y + 86, 10, 60, "#8a8070"); PX(cx + 36, S.y + 82, 10, 64, "#8a8070");
+      for (let i = 0; i < 4; i++) PX(cx - 6 + i * 14, S.y + 80, 6, 6, "#8a8070");
+      for (let x = S.x - 40; x < S.x + S.w + 40; x += 4) { const h = 28 + Math.sin((x + pan * 1.6) / 26) * 6; PX(x, S.y + S.h - h, 4, h, "#5a8a4a"); }
+      PX(S.x + 120, S.y + 128, 6, 18, "#3a3040"); pcirc(S.x + 123, S.y + 124, 4, "#3a3040"); PX(S.x + 134, S.y + 128, 6, 18, "#6a3a4a"); pcirc(S.x + 137, S.y + 124, 4, "#6a3a4a");
+      cctx.restore();
+    }
+    // projektör ve ışık huzmesi
+    PX(560, 150, 40, 18, "#2a2a30"); PX(560, 150, 40, 2, "#4a4a52"); pcirc(564, 159, 5, "#9fc4dc"); PX(556, 168, 48, 6, "#5a4030");
+    if (this.film) { cctx.fillStyle = "rgba(220,230,255,.07)"; cctx.beginPath(); cctx.moveTo(560 / 2, 159 / 2); cctx.lineTo(S.x / 2 + S.w / 2, S.y / 2); cctx.lineTo(S.x / 2 + S.w / 2, (S.y + S.h) / 2); cctx.fill(); }
+    // yatak, battaniye, ikisi yan yana
+    PX(380, 236, 250, 30, "#5a4a6a"); PX(380, 230, 250, 8, "#e8dcc8"); PX(612, 180, 18, 60, "#4a3a2a");
+    sitAt(420, 170, PEOPLE.Kerem, -1, null, 3);
+    sitAt(470, 172, PEOPLE.her, -1, glasses, 3);
+    PX(400, 236, 160, 22, "#7a5a8a"); for (let x = 404; x < 556; x += 12) PX(x, 238, 6, 18, "#8a6a9a");
+    PX(452, 222, 24, 12, "#d33b3b"); for (let x = 452; x < 476; x += 6) PX(x, 222, 3, 12, "#f4f0e3"); for (let i = 0; i < 7; i++) pcirc(456 + i * 3, 220 - (i % 2) * 2, 2, "#fff6dc");
+    // ekrandan yansıyan ışık
+    if (this.film && ft >= 140) { cctx.fillStyle = "rgba(160,200,240," + (0.05 + 0.02 * Math.sin(t / 15)) + ")"; cctx.fillRect(0, 0, 320, 180); }
+  },
+  draw() { this.t++; if (this.phase === "hall") this.drawHall(); else this.drawRoom(); },
 };
 
 /* --- 2. gün: Annenin araması --- */
@@ -1398,7 +1418,7 @@ function jumpQuest(delta) {
   locked = false; skyHour = hourNow();
   banner(d + ". gün · Görev: " + Q.t);
   // sahne içinde geçen görevler doğrudan açılsın
-  const sc = d === 2 && {3: shopScene, 6: picnicScene, 7: pubScene}[q];
+  const sc = d === 2 && {3: shopScene, 6: picnicScene, 7: wgScene}[q];
   if (sc) { locked = true; $("prompt").hidden = true; scene = sc; $("cui").innerHTML = ""; sc.open($("cui")); $("close").hidden = false; }
 }
 $("qprev").addEventListener("click", e => { e.currentTarget.blur(); jumpQuest(-1); });
