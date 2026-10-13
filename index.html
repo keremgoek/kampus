@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>[hidden]:not([hidden=until-found i]){display:none!important}</style>
-<title>Kampüste Bir Gün</title>
+<title>Buket Kampüste</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#181a24">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Kampüs">
+<meta name="apple-mobile-web-app-title" content="Buket Kampüste">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="stylesheet" href="fonts/fonts.css">
@@ -189,7 +189,10 @@
   }
   .card h1 { font-family: var(--f-display); font-weight: 700; color: var(--accent); font-size: clamp(26px, 6vw, 64px); line-height: 1; margin: 0; text-wrap: balance; }
   .card p { margin: 0; max-width: 46ch; font-size: clamp(13px, 2vw, 19px); line-height: 1.5; text-wrap: pretty; }
-  .card .letter { font-family: var(--f-display); font-size: clamp(16px, 3vw, 30px); line-height: 1.35; white-space: pre-line; max-width: 32ch; }
+  .card .letter { font-family: var(--f-display); font-size: clamp(12px, 1.9vw, 20px); line-height: 1.35; white-space: pre-line; max-width: 40ch; }
+  #outro { justify-content: safe center; overflow-y: auto; gap: 2%; }
+  #outro h1 { font-size: clamp(20px, 4.2vw, 46px); }
+  #outro .btn { flex: none; }
   .card .keys { font-size: clamp(11px, 1.5vw, 14px); opacity: .75; }
   .pad { display: none; }
   .pad div { display: flex; gap: 12px; pointer-events: auto; }
@@ -255,10 +258,8 @@
   </div>
   <div class="fade" id="fade"></div>
   <div class="card" id="intro">
-    <h1>Kampüste Bir Gün</h1>
-    <p id="introText"></p>
+    <h1>Buket Kampüste</h1>
     <button class="btn" id="start" type="button">Güne başla</button>
-    <p class="keys">A / D veya yön tuşları: yürü · Boşluk: zıpla · E: kullan / konuş · Esc: yakın planı kapat</p>
   </div>
   <div class="card" id="outro" hidden>
     <h1 id="outroTitle"></h1>
@@ -2194,7 +2195,6 @@ function begin() {
   startDay(1); running = true; skyHour = 7.5; $("intro").hidden = true; $("outro").hidden = true; document.activeElement.blur();
   banner("Görev: Uyan");
 }
-$("introText").textContent = "Günaydın " + HER + "! Önünde iki dolu gün var: önce stüdyo, ders, kütüphane ve arkadaşlar; sonra da tenisli bir cumartesi. Ama önce yataktan kalkman lazım.";
 $("outroTitle").textContent = CONFIG.outroTitle;
 $("letter").textContent = CONFIG.letter + "\n\n— " + CONFIG.fromName;
 $("start").addEventListener("click", begin);
