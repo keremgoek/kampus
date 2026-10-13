@@ -107,9 +107,10 @@
   .banner.on { opacity: 1; transform: translate(-50%, 0); }
 
   /* Yakın plan */
-  .close { position: absolute; inset: 0; margin: auto; height: 100%; width: auto; max-width: 100%; aspect-ratio: 16 / 9; z-index: 3; animation: closeIn .35s ease; }
+  .close { position: absolute; inset: 0; z-index: 3; animation: closeIn .35s ease; background: var(--bg); }
   @keyframes closeIn { from { opacity: 0; } to { opacity: 1; } }
-  .cui { position: absolute; inset: 0; }
+  /* Sahne düğmeleri 16:9 alanın içinde kalır; arka plan bütün ekrana yayılır */
+  .cui { position: absolute; inset: 0; margin: auto; height: 100%; width: auto; max-width: 100%; aspect-ratio: 16 / 9; }
   .hot { position: absolute; background: transparent; border: 2px dashed transparent; border-radius: 6px; cursor: pointer; padding: 0; }
   .hot:hover { border-color: var(--accent); }
   .hot[aria-pressed="true"] { border: 3px solid var(--accent); }
@@ -287,7 +288,19 @@ const HER = CONFIG.herName;
 let VW = 320; const VH = 180, WORLD = 1260, G = 170, F2 = 102;
 const SHOE = "#2a2420";
 const cv = $("cv"), ctx = cv.getContext("2d");
-const ccv = $("ccv"), cctx = ccv.getContext("2d");
+// Yakın plan sahneleri 640x360'lık bir ara tuvale çizilir, sonra ekrandaki tuvale ortalanıp kenarlara uzatılır.
+const SCN = document.createElement("canvas"); SCN.width = 640; SCN.height = 360;
+const cctx = SCN.getContext("2d"), ccv = $("ccv"), dctx = ccv.getContext("2d");
+function presentScene() {
+  const W = VW * 2;
+  if (ccv.width !== W) ccv.width = W;
+  const ox = Math.floor((W - 640) / 2);
+  dctx.imageSmoothingEnabled = false;
+  dctx.drawImage(SCN, ox, 0);
+  const rw = W - ox - 640;
+  if (ox > 0) { dctx.save(); dctx.translate(ox, 0); dctx.scale(-1, 1); dctx.drawImage(SCN, 0, 0, ox, 360, 0, 0, ox, 360); dctx.restore(); }
+  if (rw > 0) { dctx.save(); dctx.translate(ox + 640 + rw, 0); dctx.scale(-1, 1); dctx.drawImage(SCN, 640 - rw, 0, rw, 360, 0, 0, rw, 360); dctx.restore(); }
+}
 function $(id) { return document.getElementById(id); }
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -909,7 +922,7 @@ function sitAt(X, Y, o, face, gl, k) {
 const picnicScene = {
   open(ui) {
     this.t = 0; this.flash = 0; this.started = false;
-    const sign = el("div", "label", "Karlsruher Schloss · Schlossgarten"); Object.assign(sign.style, {left: "24%", top: "9%"}); ui.appendChild(sign);
+    const sign = el("div", "label", "Karlsruher Schloss · Schlossgarten"); Object.assign(sign.style, {left: "76%", top: "9%"}); ui.appendChild(sign);
     const bar = el("div", "cbar"); bar.appendChild(el("p", null, "Güneş batmak üzere. Asya ile Nilsu sarayın arkasındaki çimenlere battaniyeyi sermiş."));
     const box = el("div"); this.go = el("button", "btn", "Yanlarına otur"); this.go.type = "button";
     this.go.addEventListener("click", () => this.start()); box.appendChild(this.go); bar.appendChild(box); ui.appendChild(bar);
@@ -2170,7 +2183,7 @@ function loop(t) {
   const dt = Math.min(60, t - prev); prev = t; acc += dt;
   while (acc >= 1000 / 60) { if (running) step(); else frame++; acc -= 1000 / 60; }
   draw(); overlays();
-  if (scene) scene.draw();
+  if (scene) { scene.draw(); presentScene(); }
   requestAnimationFrame(loop);
 }
 
